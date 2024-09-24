@@ -15,7 +15,7 @@ const firebaseCredentials = {
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
     credential: cert(firebaseCredentials),
-    databaseURL: 'https://eias-4722e.firebaseio.com', // Ajusta según sea necesario
+    databaseURL: process.env.FIREBASE_DATABASE_URL, // Ajusta según sea necesario
   });
 
 const app = express();
