@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { type } from 'os';
 const Schema = mongoose.Schema;
 
 const modifierSchema = new Schema({
@@ -83,9 +84,10 @@ const inventorySchema = new Schema({
 
 const playerSchema = new Schema({
   _id: mongoose.Types.ObjectId,
-  name: { type: String},
+  name: { type: String},    
   nickname: { type: String },
   email: { type: String },
+  role: { type: String },       //add role
   classroom_Id: { type: String },
   level: { type: Number},
   experience: { type: Number},
@@ -111,4 +113,4 @@ const playerSchema = new Schema({
   tasks: [taskSchema]
 });
 
-module.exports = mongoose.model('Player', playerSchema);
+export const Player = mongoose.model('Player', playerSchema);
