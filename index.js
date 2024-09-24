@@ -4,11 +4,10 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Player } from './Schemas/PlayerSchema.js';
-
-const cors = require('cors');
-const { initializeApp, cert } = require('firebase-admin/app'); // Cambia applicationDefault() por cert si usas credenciales de servicio
-const { getAuth } = require('firebase-admin/auth');
+import { Player } from './Schemas/PlayerSchema.js'; //schema of player
+import cors from 'cors';
+import { initializeApp, cert } from 'firebase-admin/app'; // Cambia applicationDefault() por cert si usas credenciales de servicio
+import { getAuth } from 'firebase-admin/auth';
 
 
 const firebaseCredentials = {
