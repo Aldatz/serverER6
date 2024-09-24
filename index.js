@@ -29,10 +29,6 @@ async function main() {
   }
 }
 
-
-// const kittens = await Kitten.find();
-
-
 app.get('/players/email/:email', async (req, res) => {
     const email = req.params.email;
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
