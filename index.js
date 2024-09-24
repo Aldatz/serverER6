@@ -5,11 +5,18 @@ const { initializeApp, cert } = require('firebase-admin/app'); // Cambia applica
 const { getAuth } = require('firebase-admin/auth');
 require('dotenv').config();
 
+
+const firebaseCredentials = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  };
+
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
-  credential: cert(require('./eias-4722e-firebase-adminsdk-9kpl2-826f4c9863.json')), // Cambia la ruta
-  databaseURL: process.env.FIREBASE_DATABASE_URL // Asegúrate de tener esta variable en tu archivo .env
-});
+    credential: cert(firebaseCredentials),
+    databaseURL: 'https://eias-4722e.firebaseio.com', // Ajusta según sea necesario
+  });
 
 const app = express();
 const PORT = 3000;
