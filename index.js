@@ -1,5 +1,9 @@
-const express = require('express');
-const axios = require('axios');
+import express from 'express'
+import axios from 'axios'
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
 const app = express();
 const PORT = 3000;
 
@@ -21,16 +25,24 @@ app.listen(PORT, () => {
 });
 
 
-const mongoose = require('mongoose');
 
-//mongodb+srv://larrea:3@cluster.t0rfr.mongodb.net/
+mongoose.connection.on('connected', () => console.log('connected'));
+mongoose.connection.on('open', () => console.log('open'));
+mongoose.connection.on('disconnected', () => console.log('disconnected'));
+mongoose.connection.on('reconnected', () => console.log('reconnected'));
+mongoose.connection.on('disconnecting', () => console.log('disconnecting'));
+mongoose.connection.on('close', () => console.log('close'));
+
 
 main().catch(err => console.log(err));
 
 async function main() {
-  await mongoose.connect('mongodb+srv://larrea:3@cluster.t0rfr.mongodb.net/');
 
-  // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
+  try {
+    await mongoose.connect(process.env.CONNECTION_STRING);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const kittySchema = new mongoose.Schema({
@@ -41,3 +53,5 @@ const Kitten = mongoose.model('Kitten', kittySchema);
 
 const silence = new Kitten({ name: 'Silence' });
 console.log(silence.name); // 'Silence'
+
+await silence.save();
