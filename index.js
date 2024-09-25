@@ -4,6 +4,11 @@ const cors = require('cors');
 const { initializeApp, cert } = require('firebase-admin/app'); // Cambia applicationDefault() por cert si usas credenciales de servicio
 const { getAuth } = require('firebase-admin/auth');
 require('dotenv').config();
+const bodyParser = require('body-parser');
+// import firebase-admin package
+const admin = require('firebase-admin');
+const { start } = require('repl');
+
 
 
 const firebaseCredentials = {
@@ -21,39 +26,50 @@ initializeApp({
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
+// Middleware
+app.use(cors()); 
+app.use(bodyParser.json()); 
 
-// Middleware para autenticar tokens Firebase
-app.use(async (req, res, next) => {
-  const token = req.headers.authorization?.split('Bearer ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
+app.post('/verify-token', async (req, res) => {
+  const { idToken, email } = req.body;
+  console.log("Token recibido:", idToken);
+  console.log("Email recibido:", email);
+
+  if (!idToken) {
+    return res.status(400).json({ error: 'No se proporcionó el idToken' });
   }
 
   try {
-    const decodedToken = await getAuth().verifyIdToken(token);
-    req.user = decodedToken; // Guarda el usuario autenticado en la solicitud
-    next();
-  } catch (error) {
-    console.error(`Token verification error: ${error.message}`);
-    return res.status(403).json({ error: 'Invalid token' });
-  }
-});
+    // Verificar el idToken con Firebase Admin
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    console.log('Token verificado. UID del usuario:', uid);
 
-// Ruta protegida que solo permite accesos autenticados
-app.get('/players/email/:email', async (req, res) => {
-  const email = req.params.email;
-  const url = `https://kaotika-server.fly.dev/players/email/${email}`;
-  
-  try {
+    // Ahora haces la petición a la API de Kaotika
+    const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
-    res.json(response.data);
+
+    // Combina ambas respuestas en una sola
+    res.json({
+      success: true,
+      uid: uid,
+      decodedToken,
+      playerData: response.data
+    });
+
   } catch (error) {
-    console.error(`Error getting player data: ${error.message}`);
-    res.status(500).json({ error: 'Error getting player data' });
+    console.error('Error al verificar el token o al obtener datos del jugador:', error);
+    res.status(500).json({ error: 'Token inválido, expirado o error al obtener datos del jugador' });
   }
 });
+  
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+start();
+
+
+
+ 
