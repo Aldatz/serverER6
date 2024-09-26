@@ -1,32 +1,31 @@
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-const { initializeApp, cert } = require('firebase-admin/app'); // Cambia applicationDefault() por cert si usas credenciales de servicio
-const { getAuth } = require('firebase-admin/auth');
-require('dotenv').config();
-const bodyParser = require('body-parser');
-// import firebase-admin package
-const admin = require('firebase-admin');
-const { start } = require('repl');
-const mongoose = require('mongoose')
+import express from 'express';
+import axios from 'axios';
+import cors from 'cors';
+import { initializeApp, cert } from 'firebase-admin/app'; // Cambia applicationDefault() por cert si usas credenciales de servicio
+import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
+import admin from 'firebase-admin';
+import { start } from 'repl';
+import mongoose from 'mongoose';
+import { Player } from './Schemas/PlayerSchema.js';
 
-
+// Carga las variables de entorno desde el archivo .env
+dotenv.config();
 
 const firebaseCredentials = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  };
+};
 
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
     credential: cert(firebaseCredentials),
     databaseURL: process.env.FIREBASE_DATABASE_URL, // Ajusta según sea necesario
-  });
+});
 
 const app = express();
 const PORT = 3000;
-
 
 mongoose.connection.on('connected', () => console.log('connected'));
 mongoose.connection.on('open', () => console.log('open'));
@@ -38,7 +37,6 @@ mongoose.connection.on('close', () => console.log('close'));
 main().catch(err => console.log(err));
 
 async function main() {
-
   try {
     await mongoose.connect(process.env.CONNECTION_STRING);
   } catch (error) {
@@ -77,14 +75,13 @@ app.post('/verify-token', async (req, res) => {
       playerData: response.data
     });
 
-        insertPlayer(response.data)
+    insertPlayer(response.data)
 
   } catch (error) {
     console.error('Error al verificar el token o al obtener datos del jugador:', error);
     res.status(500).json({ error: 'Token inválido, expirado o error al obtener datos del jugador' });
   }
 });
-  
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
@@ -92,12 +89,12 @@ app.listen(PORT, () => {
 
 async function insertPlayer(playerData) {
   try {
-    const data = playerData.data
+    const data = playerData.data;
     // check players email in collections
     const existingPlayer = await Player.findOne({ email: data.email });
     console.log(data.email);
     console.log(existingPlayer);
-    
+
     if (existingPlayer) {
       // player in collection, update  data
       await Player.updateOne({ email: data.email }, data);
@@ -106,17 +103,17 @@ async function insertPlayer(playerData) {
       //player is not in collections, add the role and create a new player
       switch (data.email) {
         case process.env.ISTVAN_EMAIL: //istvan
-            data.role = 'ISTVAN';             
-            break;
+          data.role = 'ISTVAN';
+          break;
         case process.env.VILLAIN_EMAIL: //villano
-            data.role = 'VILLAIN';             
-            break;
+          data.role = 'VILLAIN';
+          break;
         case process.env.MORTIMER_EMAIL: //mortimer
-            data.role = 'MORTIMER';             
-            break;
+          data.role = 'MORTIMER';
+          break;
         default:
-            data.role = 'ACOLYTE'; //acolyte, for the moment no ikasle.aeg.eus confirmation             
-            break;
+          data.role = 'ACOLYTE'; //acolyte, for the moment no ikasle.aeg.eus confirmation
+          break;
       }
       const newPlayer = new Player(data);
       await newPlayer.save();
@@ -128,7 +125,3 @@ async function insertPlayer(playerData) {
 }
 
 start();
-
-
-
- 
