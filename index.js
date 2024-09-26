@@ -8,6 +8,7 @@ import admin from 'firebase-admin';
 import { start } from 'repl';
 import mongoose from 'mongoose';
 import { Player } from './Schemas/PlayerSchema.js';
+import { Socket } from 'socket.io';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -47,7 +48,41 @@ async function main() {
 // Middleware
 app.use(cors()); 
 app.use(bodyParser.json()); 
+// Ruta para manejar el escaneo de QR por parte de ISTVAN
+app.post('/scan-qr', async (req, res) => {
+  const { scannedEmail } = req.body; // El email del ACOLYTE escaneado
 
+  try {
+    // Buscar al ACOLYTE por su email
+    const acolyte = await Player.findOne({ email: scannedEmail });
+
+    if (!acolyte) {
+      return res.status(404).json({ error: 'Acolyte no encontrado' });
+    }
+    // Actualizamos el estado del ACOLYTE a 'online'
+    console.log("esatdo antes de cambiar: " + acolyte.is_active);
+    if (!acolyte.is_active) {
+      acolyte.is_active = true; 
+      await acolyte.save();
+      console.log("estaba offline y ahora esta : " + acolyte.is_active);
+       // Devolvemos una respuesta OK
+    res.json({ success: true, message: 'Acolyte está ahora online' });
+    }
+    else{
+      acolyte.is_active = false; 
+      await acolyte.save();
+      console.log(acolyte.is_active);
+       // Devolvemos una respuesta OK
+    res.json({ success: true, message: 'Acolyte está ahora offine' });
+    }
+   
+
+  } catch (error) {
+    console.error('Error al escanear QR:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+//ruta para verificar token
 app.post('/verify-token', async (req, res) => {
   const { idToken, email } = req.body;
   console.log("Token recibido:", idToken);
