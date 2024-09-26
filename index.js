@@ -93,7 +93,6 @@ async function insertPlayer(playerData) {
     // check players email in collections
     const existingPlayer = await Player.findOne({ email: data.email });
     console.log(data.email);
-    console.log(existingPlayer);
 
     if (existingPlayer) {
       // player in collection, update  data
@@ -117,6 +116,7 @@ async function insertPlayer(playerData) {
       }
       const newPlayer = new Player(data);
       await newPlayer.save();
+      console.log(newPlayer);
       console.log(`Player with email ${data.email} created successfully.`);
     }
   } catch (error) {
