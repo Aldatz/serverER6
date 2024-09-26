@@ -8,7 +8,8 @@ import admin from 'firebase-admin';
 import { start } from 'repl';
 import mongoose from 'mongoose';
 import { Player } from './Schemas/PlayerSchema.js';
-import { Socket } from 'socket.io';
+import { Server } from 'socket.io'; // Importa socket.io
+import http from 'http'; // Necesario para crear el servidor HTTP
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -27,6 +28,17 @@ initializeApp({
 
 const app = express();
 const PORT = 3000;
+
+// Crear servidor HTTP y enlazar con Express
+const server = http.createServer(app);
+
+// Inicializar socket.io con el servidor HTTP
+const io = new Server(server, {
+    cors: {
+        origin: '*', // Permitir acceso desde cualquier origen, cambiar según sea necesario
+        methods: ['GET', 'POST']
+    }
+});
 
 mongoose.connection.on('connected', () => console.log('connected'));
 mongoose.connection.on('open', () => console.log('open'));
@@ -48,44 +60,64 @@ async function main() {
 // Middleware
 app.use(cors()); 
 app.use(bodyParser.json()); 
-// Ruta para manejar el escaneo de QR por parte de ISTVAN
-app.post('/scan-qr', async (req, res) => {
-  const { scannedEmail } = req.body; // El email del ACOLYTE escaneado
 
-  try {
-    // Buscar al ACOLYTE por su email
-    const acolyte = await Player.findOne({ email: scannedEmail });
 
-    if (!acolyte) {
-      return res.status(404).json({ error: 'Acolyte no encontrado' });
-    }
-    // Actualizamos el estado del ACOLYTE a 'online'
-    console.log("esatdo antes de cambiar: " + acolyte.is_active);
-    if (!acolyte.is_active) {
-      acolyte.is_active = true; 
-      await acolyte.save();
-      console.log("estaba offline y ahora esta : " + acolyte.is_active);
-       // Devolvemos una respuesta OK
-    res.json({ success: true, message: 'Acolyte está ahora online' });
-    }
-    else{
-      acolyte.is_active = false; 
-      await acolyte.save();
-      console.log(acolyte.is_active);
-       // Devolvemos una respuesta OK
-    res.json({ success: true, message: 'Acolyte está ahora offine' });
-    }
-   
+// Socket.io eventos
+io.on('connection', (socket) => {
+  console.log(`Un jugador se ha conectado: ${socket.id}`);
+  //conexion correcta emitir alert
+  socket.emit('response', { message: 'Bienvenido al servidor!' });
+  // Escucha de un evento personalizado (ejemplo de evento para cambiar el estado de un Acolyte)
+  socket.on('scan_acolyte', async (data) => {
+      const { scannedEmail } = data;
+      try {
+          const acolyte = await Player.findOne({ email: scannedEmail });
 
-  } catch (error) {
-    console.error('Error al escanear QR:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
+          if (!acolyte) {
+              return socket.emit('error', { message: 'Acolyte no encontrado' });
+          }
+          // Cambiar el estado del Acolyte
+          acolyte.is_active = !acolyte.is_active;
+          acolyte.socketId = socket.id;
+          await acolyte.save();
+
+          // Enviar el estado actualizado al cliente
+          socket.emit('acolyte_status_updated', {
+              success: true,
+              email: acolyte.email,
+              is_active: acolyte.is_active,
+              message: `Acolyte ahora está ${acolyte.is_active ? 'online' : 'offline'}`
+          });
+
+          // Alerta al Acolyte que fue escaneado
+          console.log(socket.id);
+          
+          socket.emit('alert', {
+            message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
+        });
+
+        // Alerta a ISTVAN
+        socket.emit('alert_itsvan', {
+            message: `El Acolyte ${acolyte.email} ha sido ${acolyte.is_active ? 'conectado' : 'desconectado'}.`,
+        });
+
+          console.log(`Estado del Acolyte actualizado: ${acolyte.email} - ${acolyte.is_active ? 'online' : 'offline'}`);
+      } catch (error) {
+          console.error('Error al cambiar el estado del Acolyte:', error);
+          socket.emit('error', { message: 'Error al cambiar el estado del Acolyte' });
+      }
+  });
+
+  // Desconexión
+  socket.on('disconnect', () => {
+      console.log(`Jugador desconectado: ${socket.id}`);
+  });
 });
+
 //ruta para verificar token
 app.post('/verify-token', async (req, res) => {
   const { idToken, email } = req.body;
-  console.log("Token recibido:", idToken);
+  //console.log("Token recibido:", idToken);
   console.log("Email recibido:", email);
 
   if (!idToken) {
@@ -118,7 +150,7 @@ app.post('/verify-token', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 

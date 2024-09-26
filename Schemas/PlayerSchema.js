@@ -96,6 +96,7 @@ const playerSchema = new Schema({
   created_date: { type: Date},
   gold: { type: Number},
   attributes: modifierSchema,
+  socketId: { type: String },
   equipment: {
     weapon: equipmentSchema,
     armor: equipmentSchema,
