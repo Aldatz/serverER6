@@ -74,7 +74,7 @@ const mortimerGet = async () => {
     // Buscar usuarios excluyendo los correos especificados y seleccionando solo los campos deseados
     const players = await Player.find(
       { email: { $nin: excludedEmails } }, // Excluye los correos
-      { is_active: 1, name: 1, nickname: 1 } // Solo selecciona estos campos
+      { is_active: 1, name: 1, nickname: 1 , avatar: 1 } // Solo selecciona estos campos
     );
 
     return players;
