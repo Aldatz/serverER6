@@ -133,16 +133,17 @@ app.post('/verify-token', async (req, res) => {
     // Ahora haces la petición a la API de Kaotika
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
-
+    const data = await insertPlayer(response.data)
+    
     // Combina ambas respuestas en una sola
     res.json({
       success: true,
       uid: uid,
       decodedToken,
-      playerData: response.data
+      playerData: data
     });
 
-    insertPlayer(response.data)
+
 
   } catch (error) {
     console.error('Error al verificar el token o al obtener datos del jugador:', error);
@@ -159,12 +160,11 @@ async function insertPlayer(playerData) {
     const data = playerData.data;
     // check players email in collections
     const existingPlayer = await Player.findOne({ email: data.email });
-    console.log(data.email);
-
     if (existingPlayer) {
       // player in collection, update  data
       await Player.updateOne({ email: data.email }, data);
       console.log(`Player with email ${data.email} updated successfully.`);
+      return existingPlayer;
     } else {
       //player is not in collections, add the role and create a new player
       switch (data.email) {
@@ -183,12 +183,13 @@ async function insertPlayer(playerData) {
       }
       const newPlayer = new Player(data);
       await newPlayer.save();
-      console.log(newPlayer);
       console.log(`Player with email ${data.email} created successfully.`);
+      return newPlayer;
     }
   } catch (error) {
     console.error('Error updating/creating player:', error);
   }
+
 }
 
 start();
