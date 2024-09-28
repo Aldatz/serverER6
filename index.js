@@ -1,15 +1,15 @@
 import express from 'express';
 import axios from 'axios';
 import cors from 'cors';
-import { initializeApp, cert } from 'firebase-admin/app'; // Cambia applicationDefault() por cert si usas credenciales de servicio
+import { initializeApp, cert } from 'firebase-admin/app'; 
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import admin from 'firebase-admin';
-import { start } from 'repl';
 import mongoose from 'mongoose';
 import { Player } from './Schemas/PlayerSchema.js';
-import { Server } from 'socket.io'; // Importa socket.io
-import http from 'http'; // Necesario para crear el servidor HTTP
+import { Server } from 'socket.io';
+import http from 'http';
+import { start } from 'repl'; // Mantenemos el uso de `start()`
 import { error } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
@@ -24,7 +24,7 @@ const firebaseCredentials = {
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
     credential: cert(firebaseCredentials),
-    databaseURL: process.env.FIREBASE_DATABASE_URL, // Ajusta según sea necesario
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
 const app = express();
@@ -36,11 +36,12 @@ const server = http.createServer(app);
 // Inicializar socket.io con el servidor HTTP
 const io = new Server(server, {
     cors: {
-        origin: '*', // Permitir acceso desde cualquier origen, cambiar según sea necesario
+        origin: '*',
         methods: ['GET', 'POST']
     }
 });
 
+// Conectar a MongoDB
 mongoose.connection.on('connected', () => console.log('connected'));
 mongoose.connection.on('open', () => console.log('open'));
 mongoose.connection.on('disconnected', () => console.log('disconnected'));
@@ -62,62 +63,103 @@ async function main() {
 app.use(cors()); 
 app.use(bodyParser.json()); 
 
+// Nueva función llamada "mortimerGet" para obtener todos los jugadores, excluyendo ciertos roles
+const mortimerGet = async () => {
+  try {
+    const excludedEmails = [
+      process.env.ISTVAN_EMAIL,
+      process.env.VILLAIN_EMAIL,
+      process.env.MORTIMER_EMAIL
+    ];
+
+    // Buscar usuarios excluyendo los correos especificados y seleccionando solo los campos deseados
+    const players = await Player.find(
+      { email: { $nin: excludedEmails } }, // Excluye los correos
+      { is_active: 1, name: 1, nickname: 1 , avatar: 1 } // Solo selecciona estos campos
+    );
+
+    return players;
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error;
+  }
+};
+
 
 // Socket.io eventos
 io.on('connection', async (socket) => {
   console.log(`Un jugador se ha conectado: ${socket.id}`);
-  //conexion correcta emitir alert
+
+  // Enviar la lista de jugadores (excluyendo los especificados) al cliente que se acaba de conectar
+  try {
+    const players = await mortimerGet();
+    socket.emit('all_players', players);  // Enviar lista de jugadores excluyendo los mencionados
+  } catch (error) {
+    socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
+  }
+
+  // Emitir bienvenida
   socket.emit('response', { message: 'Bienvenido al servidor!' });
+
   // Escucha de un evento personalizado (ejemplo de evento para cambiar el estado de un Acolyte)
   socket.on('scan_acolyte', async (data) => {
-      const { scannedEmail } = data;
-      try {
-          const acolyte = await Player.findOne({ email: scannedEmail });
+    const { scannedEmail } = data;
+    try {
+      const acolyte = await Player.findOne({ email: scannedEmail });
 
-          if (!acolyte) {
-              return socket.emit('error', { message: 'Acolyte no encontrado' });
-          }
-          // Cambiar el estado del Acolyte
-          acolyte.is_active = !acolyte.is_active;
-          await acolyte.save();
-
-          // Enviar el estado actualizado al cliente
-          socket.emit('acolyte_status_updated', {
-              success: true,
-              email: acolyte.email,
-              is_active: acolyte.is_active,
-              message: `Acolyte ahora está ${acolyte.is_active ? 'online' : 'offline'}`
-          });
-
-          // Alerta al Acolyte que fue escaneado
-          console.log(socket.id);
-          
-          socket.emit('alert', {
-            message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
-        });
-
-        // Alerta a ISTVAN
-        socket.emit('alert_itsvan', {
-            message: `El Acolyte ${acolyte.email} ha sido ${acolyte.is_active ? 'conectado' : 'desconectado'}.`,
-        });
-
-          console.log(`Estado del Acolyte actualizado: ${acolyte.email} - ${acolyte.is_active ? 'online' : 'offline'}`);
-      } catch (error) {
-          console.error('Error al cambiar el estado del Acolyte:', error);
-          socket.emit('error', { message: 'Error al cambiar el estado del Acolyte' });
+      if (!acolyte) {
+        return socket.emit('error', { message: 'Acolyte no encontrado' });
       }
+
+      // Cambiar el estado del Acolyte
+      acolyte.is_active = !acolyte.is_active;
+      acolyte.socketId = socket.id;
+      await acolyte.save();
+
+      // Enviar el estado actualizado al cliente
+      socket.emit('acolyte_status_updated', {
+        success: true,
+        email: acolyte.email,
+        is_active: acolyte.is_active,
+        message: `Acolyte ahora está ${acolyte.is_active ? 'online' : 'offline'}`,
+      });
+
+      // Alerta al Acolyte que fue escaneado
+      socket.emit('alert', {
+        message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
+      });
+
+      // Emitir alerta a ISTVAN
+      socket.emit('alert_itsvan', {
+        message: `El Acolyte ${acolyte.email} ha sido ${acolyte.is_active ? 'conectado' : 'desconectado'}.`,
+      });
+
+      console.log(`Estado del Acolyte actualizado: ${acolyte.email} - ${acolyte.is_active ? 'online' : 'offline'}`);
+    } catch (error) {
+      console.error('Error al cambiar el estado del Acolyte:', error);
+      socket.emit('error', { message: 'Error al cambiar el estado del Acolyte' });
+    }
   });
 
   // Desconexión
   socket.on('disconnect', () => {
-      console.log(`Jugador desconectado: ${socket.id}`);
+    console.log(`Jugador desconectado: ${socket.id}`);
   });
 });
 
-//ruta para verificar token
+// Nueva ruta API para obtener todos los jugadores, excluyendo los especificados
+app.get('/mortimer', async (req, res) => {
+  try {
+    const players = await mortimerGet();
+    res.json(players); // Envía los jugadores como respuesta JSON
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching players' });
+  }
+});
+
+// Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
   const { idToken, email } = req.body;
-  //console.log("Token recibido:", idToken);
   console.log("Email recibido:", email);
 
   if (!idToken) {
@@ -125,12 +167,10 @@ app.post('/verify-token', async (req, res) => {
   }
 
   try {
-    // Verificar el idToken con Firebase Admin
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
     console.log('Token verificado. UID del usuario:', uid);
 
-    // Ahora haces la petición a la API de Kaotika
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
     const data = await insertPlayer(response.data)
@@ -158,34 +198,33 @@ app.post('/verify-token', async (req, res) => {
   }
 });
 
+// Iniciar el servidor
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
+// Función para insertar jugador en la base de datos
 async function insertPlayer(playerData) {
   try {
     const data = playerData.data;
-    // check players email in collections
     const existingPlayer = await Player.findOne({ email: data.email });
     if (existingPlayer) {
-      // player in collection, update  data
       await Player.updateOne({ email: data.email }, data);
       console.log(`Player with email ${data.email} updated successfully.`);
       return existingPlayer;
     } else {
-      //player is not in collections, add the role and create a new player
       switch (data.email) {
-        case process.env.ISTVAN_EMAIL: //istvan
+        case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
           break;
-        case process.env.VILLAIN_EMAIL: //villano
+        case process.env.VILLAIN_EMAIL:
           data.role = 'VILLAIN';
           break;
-        case process.env.MORTIMER_EMAIL: //mortimer
+        case process.env.MORTIMER_EMAIL:
           data.role = 'MORTIMER';
           break;
         default:
-          data.role = 'ACOLYTE'; //acolyte, for the moment no ikasle.aeg.eus confirmation
+          data.role = 'ACOLYTE';
           break;
       }
       const newPlayer = new Player(data);
@@ -199,4 +238,5 @@ async function insertPlayer(playerData) {
 
 }
 
+// Mantener el uso de start()
 start();
