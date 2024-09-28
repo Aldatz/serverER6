@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io'; // Importa socket.io
 import http from 'http'; // Necesario para crear el servidor HTTP
+import { error } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -63,7 +64,7 @@ app.use(bodyParser.json());
 
 
 // Socket.io eventos
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log(`Un jugador se ha conectado: ${socket.id}`);
   //conexion correcta emitir alert
   socket.emit('response', { message: 'Bienvenido al servidor!' });
@@ -78,7 +79,6 @@ io.on('connection', (socket) => {
           }
           // Cambiar el estado del Acolyte
           acolyte.is_active = !acolyte.is_active;
-          acolyte.socketId = socket.id;
           await acolyte.save();
 
           // Enviar el estado actualizado al cliente
@@ -134,6 +134,13 @@ app.post('/verify-token', async (req, res) => {
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
     const data = await insertPlayer(response.data)
+
+    try{
+      const acolyte = await Player.findOne({ email: scannedEmail });
+      acolyte.socketId = socket.id;
+    }catch{
+      console.log("Error asignin sockect to user");
+    }
     
     // Combina ambas respuestas en una sola
     res.json({
