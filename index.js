@@ -9,8 +9,7 @@ import mongoose from 'mongoose';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
-import { start } from 'repl'; // Mantenemos el uso de `start()`
-import { error } from 'console';
+import { start } from 'repl';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -85,7 +84,6 @@ const mortimerGet = async () => {
   }
 };
 
-
 // Socket.io eventos
 io.on('connection', async (socket) => {
   console.log(`Un jugador se ha conectado: ${socket.id}`);
@@ -97,9 +95,6 @@ io.on('connection', async (socket) => {
   } catch (error) {
     socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
   }
-
-  // Emitir bienvenida
-  socket.emit('response', { message: 'Bienvenido al servidor!' });
 
   // Escucha de un evento personalizado (ejemplo de evento para cambiar el estado de un Acolyte)
   socket.on('scan_acolyte', async (data) => {
@@ -113,7 +108,6 @@ io.on('connection', async (socket) => {
 
       // Cambiar el estado del Acolyte
       acolyte.is_active = !acolyte.is_active;
-      acolyte.socketId = socket.id;
       await acolyte.save();
 
       // Enviar el estado actualizado al cliente
@@ -159,44 +153,47 @@ app.get('/mortimer', async (req, res) => {
 
 // Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
-  const { idToken, email } = req.body;
+  const { idToken, email, socketId } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
   console.log("Email recibido:", email);
+  console.log("Socket ID recibido:", socketId);
 
   if (!idToken) {
     return res.status(400).json({ error: 'No se proporcionó el idToken' });
   }
 
   try {
+    // Verifica el token de Firebase
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
     console.log('Token verificado. UID del usuario:', uid);
 
+    // Obtener los datos del jugador desde la API
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
-    const data = await insertPlayer(response.data)
+    const playerData = await insertPlayer(response.data);
 
-    try{
-      const acolyte = await Player.findOne({ email: scannedEmail });
-      acolyte.socketId = socket.id;
-    }catch{
-      console.log("Error asignin sockect to user");
+    // Asignar socketId al jugador en la base de datos
+    const player = await Player.findOne({ email });
+    if (player) {
+      player.socketId = socketId; // Asignamos el socketId recibido
+      await player.save();        // Guardamos los cambios en la base de datos
+      console.log(`Socket ID ${socketId} asignado al jugador con email: ${email}`);
     }
-    
-    // Combina ambas respuestas en una sola
+
+    // Responder con los datos
     res.json({
       success: true,
       uid: uid,
       decodedToken,
-      playerData: data
+      playerData
     });
-
-
 
   } catch (error) {
     console.error('Error al verificar el token o al obtener datos del jugador:', error);
     res.status(500).json({ error: 'Token inválido, expirado o error al obtener datos del jugador' });
   }
 });
+
 
 // Iniciar el servidor
 server.listen(PORT, () => {
@@ -235,7 +232,6 @@ async function insertPlayer(playerData) {
   } catch (error) {
     console.error('Error updating/creating player:', error);
   }
-
 }
 
 // Mantener el uso de start()
