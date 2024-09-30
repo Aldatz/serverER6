@@ -101,7 +101,10 @@ io.on('connection', async (socket) => {
     const { scannedEmail } = data;
     try {
       const acolyte = await Player.findOne({ email: scannedEmail });
+      const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
       const acolyte_socket = acolyte.socketId;
+      const mortimer_socket = MORTIMER.socketId;
+
 
       if (!acolyte) {
         return socket.emit('error', { message: 'Acolyte no encontrado' });
@@ -112,8 +115,11 @@ io.on('connection', async (socket) => {
       await acolyte.save();
 
       const players = await mortimerGet();
-      socket.emit('all_players', players);
-
+      // socket.emit('all_players', players);
+      socket.to(mortimer_socket).emit('all_players', {
+        players: players,
+        from: socket.id,
+      });
 
       // Enviar el estado actualizado al cliente
       socket.emit('acolyte_status_updated', {
