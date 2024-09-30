@@ -111,6 +111,10 @@ io.on('connection', async (socket) => {
       acolyte.is_active = !acolyte.is_active;
       await acolyte.save();
 
+      const players = await mortimerGet();
+      socket.emit('all_players', players);
+
+
       // Enviar el estado actualizado al cliente
       socket.emit('acolyte_status_updated', {
         success: true,
