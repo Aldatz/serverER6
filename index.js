@@ -101,6 +101,7 @@ io.on('connection', async (socket) => {
     const { scannedEmail } = data;
     try {
       const acolyte = await Player.findOne({ email: scannedEmail });
+      const acolyte_socket = acolyte.socketId;
 
       if (!acolyte) {
         return socket.emit('error', { message: 'Acolyte no encontrado' });
@@ -119,8 +120,9 @@ io.on('connection', async (socket) => {
       });
 
       // Alerta al Acolyte que fue escaneado
-      socket.emit('alert', {
+      socket.to(acolyte_socket).emit('alert', {
         message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
+        from: socket.id,
       });
 
       // Emitir alerta a ISTVAN
