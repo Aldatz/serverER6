@@ -10,6 +10,7 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
+import { log } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -80,6 +81,40 @@ const mortimerGet = async () => {
     return players;
   } catch (error) {
     console.error('Error fetching players:', error);
+    throw error;
+  }
+};
+
+
+app.post('/isInside', async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(email); // Check if the email is coming correctly
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const isInside = await getUserIsInside(email);
+    res.json(isInside); // Send the 'is_active' status as JSON
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error fetching players' });
+  }
+});
+
+const getUserIsInside = async (email) => {
+  try {
+    // Find the user by email and select the 'is_active' field
+    const isInside = await Player.findOne({ email: email }).select('is_active');
+    if (isInside) {
+      console.log(isInside.is_active); // Log the 'is_active' status
+    } else {
+      console.log('User not found');
+    }
+    return isInside;
+  } catch (error) {
+    console.error('Error fetching IsInside:', error);
     throw error;
   }
 };
@@ -156,6 +191,12 @@ io.on('connection', async (socket) => {
         message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
         from: socket.id,
       });
+
+        // Alerta al Acolyte que fue escaneado
+        socket.to(acolyte_socket).emit('change_isInside', {
+          data: acolyte.is_active,
+          from: socket.id,
+        });
 
       // Emitir alerta a ISTVAN
       socket.emit('alert_itsvan', {
