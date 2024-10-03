@@ -96,15 +96,40 @@ io.on('connection', async (socket) => {
     socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
   }
 
+
+  try {
+    socket.emit('request_email');
+
+    socket.on('send_email', async (data) => {
+      const { email } = data;
+  
+      try {
+        // Encuentra el usuario y actualiza el socketId
+        const user = await Player.findOneAndUpdate(
+          { email: email },
+          { socketId: socket.id }, // Actualiza el socketId
+          { new: true }
+        );
+  
+        if (user) {
+          console.log(`Socket ID actualizado para el usuario: ${email}`);
+        } else {
+          console.log(`Usuario con email ${email} no encontrado`);
+        }
+      } catch (error) {
+        console.error('Error actualizando el socketId en MongoDB:', error);
+      }
+    });
+  } catch (error) {
+    socket.emit('error', { message: 'Error al obtener el correo del jugador' });
+  }
+
   // Escucha de un evento personalizado (ejemplo de evento para cambiar el estado de un Acolyte)
   socket.on('scan_acolyte', async (data) => {
     const { scannedEmail } = data;
     try {
       const acolyte = await Player.findOne({ email: scannedEmail });
-      const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
       const acolyte_socket = acolyte.socketId;
-      const mortimer_socket = MORTIMER.socketId;
-
 
       if (!acolyte) {
         return socket.emit('error', { message: 'Acolyte no encontrado' });
@@ -115,11 +140,8 @@ io.on('connection', async (socket) => {
       await acolyte.save();
 
       const players = await mortimerGet();
-      // socket.emit('all_players', players);
-      socket.to(mortimer_socket).emit('all_players', {
-        players: players,
-        from: socket.id,
-      });
+      socket.emit('all_players', players);
+
 
       // Enviar el estado actualizado al cliente
       socket.emit('acolyte_status_updated', {
@@ -205,6 +227,7 @@ app.post('/verify-token', async (req, res) => {
     res.status(500).json({ error: 'Token inválido, expirado o error al obtener datos del jugador' });
   }
 });
+
 
 
 // Iniciar el servidor
