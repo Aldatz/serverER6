@@ -126,7 +126,10 @@ io.on('connection', async (socket) => {
   // Enviar la lista de jugadores (excluyendo los especificados) al cliente que se acaba de conectar
   try {
     const players = await mortimerGet();
-    socket.emit('all_players', players);  // Enviar lista de jugadores excluyendo los mencionados
+    socket.to(mortimer_socket).emit('all_players', {
+      players: players,
+      from: socket.id,
+    });
   } catch (error) {
     socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
   }
@@ -164,7 +167,9 @@ io.on('connection', async (socket) => {
     const { scannedEmail } = data;
     try {
       const acolyte = await Player.findOne({ email: scannedEmail });
+      const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
       const acolyte_socket = acolyte.socketId;
+      const mortimer_socket = MORTIMER.socketId;
 
       if (!acolyte) {
         return socket.emit('error', { message: 'Acolyte no encontrado' });
@@ -173,9 +178,11 @@ io.on('connection', async (socket) => {
       // Cambiar el estado del Acolyte
       acolyte.is_active = !acolyte.is_active;
       await acolyte.save();
-
       const players = await mortimerGet();
-      socket.emit('all_players', players);
+      socket.to(mortimer_socket).emit('all_players', {
+      players: players,
+      from: socket.id,
+    });
 
 
       // Enviar el estado actualizado al cliente
