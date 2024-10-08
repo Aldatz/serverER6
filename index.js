@@ -192,6 +192,10 @@ io.on('connection', async (socket) => {
         from: socket.id,
       });
 
+      socket.to(acolyte_socket).emit('qr_scanned', {
+        is_active: acolyte.is_active,
+      });
+      
         // Alerta al Acolyte que fue escaneado
         socket.to(acolyte_socket).emit('change_isInside', {
           data: acolyte.is_active,
