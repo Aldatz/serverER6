@@ -237,11 +237,13 @@ app.get('/mortimer', async (req, res) => {
   }
 });
 
-app.post('/get-ingredients', async (req, res) => {
+// Cambia app.post a app.get
+app.get('/get-ingredients', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
     
+    // Verifica si la respuesta tiene datos
     if (response.data && response.data.data) {
       res.json({
         success: true,
@@ -262,7 +264,6 @@ app.post('/get-ingredients', async (req, res) => {
     });
   }
 });
-
 
 // Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
