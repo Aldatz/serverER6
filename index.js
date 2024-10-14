@@ -237,6 +237,28 @@ app.get('/mortimer', async (req, res) => {
   }
 });
 
+app.post('/get-ingredients', async (req, res) => {
+  try {
+    const url = `https://kaotika-server.fly.dev/ingredients`;
+    const response = await axios.get(url);
+    const ingredientsData = await insertIngredients(response.data);
+    
+    res.json({
+      success: true,
+      ingredientsData
+    });
+  } catch (error) {
+    console.error('Error fetching ingredients:', error.message);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch ingredients',
+      error: error.message 
+    });
+  }
+});
+
+
 // Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
   const { idToken, email, socketId } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
