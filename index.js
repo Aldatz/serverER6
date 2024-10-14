@@ -241,11 +241,13 @@ app.post('/get-ingredients', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
+    
+    // Inserta los ingredientes si es necesario
     const ingredientsData = await insertIngredients(response.data);
     
     res.json({
       success: true,
-      ingredientsData
+      ingredientsData: ingredientsData.data // solo pasar el campo "data"
     });
   } catch (error) {
     console.error('Error fetching ingredients:', error.message);
@@ -257,6 +259,7 @@ app.post('/get-ingredients', async (req, res) => {
     });
   }
 });
+
 
 
 // Ruta para verificar token
