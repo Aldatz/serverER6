@@ -194,10 +194,10 @@ io.on('connection', async (socket) => {
       });
 
       // Alerta al Acolyte que fue escaneado
-      socket.to(acolyte_socket).emit('alert', {
-        message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
-        from: socket.id,
-      });
+      // socket.to(acolyte_socket).emit('alert', {
+      //   message: `Tu estado ha cambiado a ${acolyte.is_active ? 'online' : 'offline'}`,
+      //   from: socket.id,
+      // });
 
       socket.to(acolyte_socket).emit('qr_scanned', {
         is_active: acolyte.is_active,
@@ -210,9 +210,9 @@ io.on('connection', async (socket) => {
         });
 
       // Emitir alerta a ISTVAN
-      socket.emit('alert_itsvan', {
-        message: `El Acolyte ${acolyte.email} ha sido ${acolyte.is_active ? 'conectado' : 'desconectado'}.`,
-      });
+      // socket.emit('alert_itsvan', {
+      //   message: `El Acolyte ${acolyte.email} ha sido ${acolyte.is_active ? 'conectado' : 'desconectado'}.`,
+      // });
 
       console.log(`Estado del Acolyte actualizado: ${acolyte.email} - ${acolyte.is_active ? 'online' : 'offline'}`);
     } catch (error) {
