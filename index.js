@@ -345,13 +345,20 @@ server.listen(PORT, () => {
 // Función para insertar jugador en la base de datos
 async function insertPlayer(playerData) {
   try {
-    const data = playerData.data;
-    const existingPlayer = await Player.findOne({ email: data.email });
-    if (existingPlayer) {
-      await Player.updateOne({ email: data.email }, data);
-      console.log(`Player with email ${data.email} updated successfully.`);
-      return existingPlayer;
-    } else {
+      const data = playerData.data;
+      const existingPlayer = await Player.findOne({ email: data.email });
+
+      if (existingPlayer) {
+          // Actualiza los campos necesarios sin cambiar el estado de is_active
+          await Player.updateOne({ email: data.email }, {
+              ...data,
+              is_active: existingPlayer.is_active // Mantén el estado existente
+          });
+          console.log(`Player with email ${data.email} updated successfully.`);
+          return existingPlayer;
+      } else {
+          data.is_active = false; // Solo para nuevos jugadores
+
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
@@ -366,6 +373,7 @@ async function insertPlayer(playerData) {
           data.role = 'ACOLYTE';
           break;
       }
+
       const newPlayer = new Player(data);
       await newPlayer.save();
       console.log(`Player with email ${data.email} created successfully.`);

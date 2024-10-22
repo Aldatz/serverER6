@@ -91,7 +91,7 @@ const playerSchema = new Schema({
   classroom_Id: { type: String },
   level: { type: Number},
   experience: { type: Number},
-  is_active: { type: Boolean},
+  is_active: { type: Boolean, default: false},
   avatar: { type: String },
   created_date: { type: Date},
   gold: { type: Number},
