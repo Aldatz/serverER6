@@ -11,6 +11,7 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import { log } from 'console';
+import MQTTClient from './mqttClient.js';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -20,6 +21,30 @@ const firebaseCredentials = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
 };
+
+// Configuración de la conexión MQTT usando variables de entorno
+const mqttOptions = {
+  host: process.env.MQTT_HOST,
+  port: process.env.MQTT_PORT,
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
+};
+
+// Instanciar el cliente MQTT
+const mqttClient = new MQTTClient(mqttOptions);
+
+// Manejar mensajes MQTT emitidos desde mqttClient.js
+mqttClient.on('message', (topic, message) => {
+  console.log(`Procesando mensaje de ${topic}: ${message}`);
+
+  if (topic === 'EIAS_idcard') {
+    // const isValid = verifyCardCode(message);
+    // const responseTopic = 'app/esp32/respuesta';
+    // const responseMessage = isValid ? 'Código válido' : 'Código inválido';
+    // mqttClient.publish(responseTopic, responseMessage);
+    console.log('verificamos');
+  }
+});
 
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
