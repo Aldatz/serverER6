@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "EEE-193" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "EEE-193" ]
+    branches: [ "main" ]
 
 jobs:
   build:
