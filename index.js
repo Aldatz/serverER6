@@ -14,7 +14,7 @@ import { log } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
-
+ 
 const firebaseCredentials = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
