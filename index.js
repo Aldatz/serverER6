@@ -11,6 +11,7 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import { log } from 'console';
+import mqtt from 'mqtt';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -40,6 +41,12 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     }
 });
+
+const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_SERVER}`, {
+  port: process.env.MQTT_PORT || 1883,
+  clientId: 'SERVER_EIAS',
+});
+
 
 // Conectar a MongoDB
 mongoose.connection.on('connected', () => console.log('connected'));
@@ -238,7 +245,7 @@ app.get('/mortimer', async (req, res) => {
 });
 
 // Cambia app.post a app.get
-app.get('/ingredients', async (req, res) => {
+app.get('/get-ingredients', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
@@ -260,33 +267,6 @@ app.get('/ingredients', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch ingredients',
-      error: error.message 
-    });
-  }
-});
-
-app.get('/potions', async (req, res) => {
-  try {
-    const url = `https://kaotika-server.fly.dev/diseases`;
-    const response = await axios.get(url);
-    
-    // Verifica si la respuesta tiene datos
-    if (response.data && response.data.data) {
-      res.json({
-        success: true,
-        potionsData: response.data.data,  // Enviar el array de ingredientes
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'No potions found',
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching potions:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch potions',
       error: error.message 
     });
   }
@@ -345,20 +325,13 @@ server.listen(PORT, () => {
 // Función para insertar jugador en la base de datos
 async function insertPlayer(playerData) {
   try {
-      const data = playerData.data;
-      const existingPlayer = await Player.findOne({ email: data.email });
-
-      if (existingPlayer) {
-          // Actualiza los campos necesarios sin cambiar el estado de is_active
-          await Player.updateOne({ email: data.email }, {
-              ...data,
-              is_active: existingPlayer.is_active // Mantén el estado existente
-          });
-          console.log(`Player with email ${data.email} updated successfully.`);
-          return existingPlayer;
-      } else {
-          data.is_active = false; // Solo para nuevos jugadores
-
+    const data = playerData.data;
+    const existingPlayer = await Player.findOne({ email: data.email });
+    if (existingPlayer) {
+      await Player.updateOne({ email: data.email }, data);
+      console.log(`Player with email ${data.email} updated successfully.`);
+      return existingPlayer;
+    } else {
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
@@ -373,7 +346,6 @@ async function insertPlayer(playerData) {
           data.role = 'ACOLYTE';
           break;
       }
-
       const newPlayer = new Player(data);
       await newPlayer.save();
       console.log(`Player with email ${data.email} created successfully.`);
@@ -383,6 +355,28 @@ async function insertPlayer(playerData) {
     console.error('Error updating/creating player:', error);
   }
 }
+
+
+// Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
+mqttClient.on('connect', () => {
+  console.log('Connected to broker MQTT');
+  mqttClient.subscribe('EIASidCard', (err) => {
+    if (err) {
+      console.error('Error al suscribirse al tópico EIASidCard:', err);
+    } else {
+      console.log('Suscrito al tópico EIASidCard');
+    }
+  });
+});
+
+// Manejar mensajes recibidos en el tópico 'EIASidCard'
+mqttClient.on('message', (topic, message) => {
+  if (topic === 'EIASidCard') {
+    const uid = message.toString(); // Convierte el mensaje a string
+    console.log(`UID recibido: ${uid}`);
+    // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
+  }
+});
 
 // Mantener el uso de start()
 start();
