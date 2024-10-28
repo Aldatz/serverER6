@@ -409,6 +409,7 @@ mqttClient.on('offline', () => {
 // Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
 mqttClient.on('connect', () => {
   console.log('Conectado al broker MQTT');
+  console.log('comentario de prueba')
   mqttClient.subscribe('EIASidCard', (err) => {
     if (err) {
       console.error('Error al suscribirse al tópico EIASidCard:', err);
@@ -417,6 +418,8 @@ mqttClient.on('connect', () => {
     }
   });
 });
+
+
 
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
 mqttClient.on('message', (topic, message) => {
