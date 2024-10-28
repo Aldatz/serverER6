@@ -15,7 +15,7 @@ import mqtt from 'mqtt';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
-
+ 
 const firebaseCredentials = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -244,7 +244,7 @@ app.get('/mortimer', async (req, res) => {
 });
 
 // Cambia app.post a app.get
-app.get('/get-ingredients', async (req, res) => {
+app.get('/ingredients', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
@@ -266,6 +266,33 @@ app.get('/get-ingredients', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch ingredients',
+      error: error.message 
+    });
+  }
+});
+
+app.get('/potions', async (req, res) => {
+  try {
+    const url = `https://kaotika-server.fly.dev/diseases`;
+    const response = await axios.get(url);
+    
+    // Verifica si la respuesta tiene datos
+    if (response.data && response.data.data) {
+      res.json({
+        success: true,
+        potionsData: response.data.data,  // Enviar el array de ingredientes
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'No potions found',
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching potions:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch potions',
       error: error.message 
     });
   }
@@ -324,13 +351,20 @@ server.listen(PORT, () => {
 // Función para insertar jugador en la base de datos
 async function insertPlayer(playerData) {
   try {
-    const data = playerData.data;
-    const existingPlayer = await Player.findOne({ email: data.email });
-    if (existingPlayer) {
-      await Player.updateOne({ email: data.email }, data);
-      console.log(`Player with email ${data.email} updated successfully.`);
-      return existingPlayer;
-    } else {
+      const data = playerData.data;
+      const existingPlayer = await Player.findOne({ email: data.email });
+
+      if (existingPlayer) {
+          // Actualiza los campos necesarios sin cambiar el estado de is_active
+          await Player.updateOne({ email: data.email }, {
+              ...data,
+              is_active: existingPlayer.is_active // Mantén el estado existente
+          });
+          console.log(`Player with email ${data.email} updated successfully.`);
+          return existingPlayer;
+      } else {
+          data.is_active = false; // Solo para nuevos jugadores
+
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
@@ -345,6 +379,7 @@ async function insertPlayer(playerData) {
           data.role = 'ACOLYTE';
           break;
       }
+
       const newPlayer = new Player(data);
       await newPlayer.save();
       console.log(`Player with email ${data.email} created successfully.`);
