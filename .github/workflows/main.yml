@@ -8,15 +8,21 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 20.12.2
+
+    - name: Use Node.js 22.8.0
       uses: actions/setup-node@v2
       with:
-        node-version: 20.12.2
-    - run: git pull origin main
-    - run: npm install
-    - run: pm2 restart index
+        node-version: 22.8.0
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Show Commit Hash
+      run: git log -1 --pretty=format:"%H - %s"
+
+    - name: Restart PM2
+      run: pm2 restart all
