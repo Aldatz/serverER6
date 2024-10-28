@@ -11,6 +11,7 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import { log } from 'console';
+import mqtt from 'mqtt';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -39,6 +40,11 @@ const io = new Server(server, {
         origin: '*',
         methods: ['GET', 'POST']
     }
+});
+
+const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_SERVER}`, {
+  port: process.env.MQTT_PORT || 1883,
+  clientId: 'SERVER_EIAS',
 });
 
 // Conectar a MongoDB
@@ -348,6 +354,27 @@ async function insertPlayer(playerData) {
     console.error('Error updating/creating player:', error);
   }
 }
+
+// Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
+mqttClient.on('connect', () => {
+  console.log('Conectado al broker MQTT');
+  mqttClient.subscribe('EIASidCard', (err) => {
+    if (err) {
+      console.error('Error al suscribirse al tópico EIASidCard:', err);
+    } else {
+      console.log('Suscrito al tópico EIASidCard');
+    }
+  });
+});
+
+// Manejar mensajes recibidos en el tópico 'EIASidCard'
+mqttClient.on('message', (topic, message) => {
+  if (topic === 'EIASidCard') {
+    const uid = message.toString(); // Convierte el mensaje a string
+    console.log(`UID recibido: ${uid}`);
+    // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
+  }
+});
 
 // Mantener el uso de start()
 start();
