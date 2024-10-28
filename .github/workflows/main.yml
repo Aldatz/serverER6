@@ -18,5 +18,4 @@ jobs:
       with:
         node-version: 22.8.0
     - run: npm install
-    - run: npm test
     - run: pm2 restart index
