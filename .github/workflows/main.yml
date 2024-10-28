@@ -1,0 +1,22 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "EEE-193" ]
+  pull_request:
+    branches: [ "EEE-193" ]
+
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 22.8.0
+      uses: actions/setup-node@v2
+      with:
+        node-version: 22.8.0
+    - run: npm install
+    - run: npm test
+    - run: pm2 restart index
