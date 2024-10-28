@@ -357,6 +357,23 @@ async function insertPlayer(playerData) {
 }
 
 
+mqttClient.on('error', (error) => {
+  console.error('Error al conectar al broker MQTT:', error);
+});
+
+mqttClient.on('reconnect', () => {
+  console.log('Reintentando conectar al broker MQTT');
+});
+
+mqttClient.on('close', () => {
+  console.log('Conexión al broker MQTT cerrada');
+});
+
+mqttClient.on('offline', () => {
+  console.log('No esta conectado al broker MQTT');
+});
+
+
 // Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
 mqttClient.on('connect', () => {
   console.log('Connected to broker MQTT');
