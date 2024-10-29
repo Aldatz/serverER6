@@ -433,6 +433,8 @@ mqttClient.on('message', async (topic, message) => {
         mqttClient.publish('EIASOpenDoor', `${player.name}`);
       } else {
         console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
+
+        mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied');
       }
     } catch (error) {
       console.error('Error al buscar cardId en la base de datos:', error);
