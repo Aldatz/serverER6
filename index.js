@@ -430,7 +430,7 @@ mqttClient.on('message', async (topic, message) => {
         console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
 
         // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
-        mqttClient.publish('EIASOpenDoor', '');
+        mqttClient.publish('EIASOpenDoor', `${player.name}`);
       } else {
         console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
       }
