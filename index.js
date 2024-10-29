@@ -442,7 +442,7 @@ mqttClient.on('message', async (topic, message) => {
   }
 });
 
-console.log("self-deployment test Sergio_5");
+console.log("self-deployment test Sergio_6");
 
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
 mqttClient.on('message', (topic, message) => {
