@@ -92,6 +92,7 @@ const playerSchema = new Schema({
   level: { type: Number},
   experience: { type: Number},
   is_active: { type: Boolean, default: false},
+  is_inside_tower: { type: Boolean, default: false},
   avatar: { type: String },
   created_date: { type: Date},
   gold: { type: Number},

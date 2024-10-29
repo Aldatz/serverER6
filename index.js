@@ -81,7 +81,7 @@ const mortimerGet = async () => {
     // Buscar usuarios excluyendo los correos especificados y seleccionando solo los campos deseados
     const players = await Player.find(
       { email: { $nin: excludedEmails } }, // Excluye los correos
-      { is_active: 1, name: 1, nickname: 1 , avatar: 1 } // Solo selecciona estos campos
+      { is_active: 1, name: 1, nickname: 1 , avatar: 1, is_inside_tower: 1, } // Solo selecciona estos campos
     );
 
     return players;
@@ -358,13 +358,14 @@ async function insertPlayer(playerData) {
           // Actualiza los campos necesarios sin cambiar el estado de is_active
           await Player.updateOne({ email: data.email }, {
               ...data,
-              is_active: existingPlayer.is_active // Mantén el estado existente
+              is_active: existingPlayer.is_active, // Mantén el estado existente
+              is_inside_tower: existingPlayer.is_inside_tower
           });
           console.log(`Player with email ${data.email} updated successfully.`);
           return existingPlayer;
       } else {
           data.is_active = false; // Solo para nuevos jugadores
-
+          data.is_inside_tower = false;
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
