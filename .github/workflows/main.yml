@@ -11,13 +11,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Change to project directory
       run: cd /home/daw1/Escritorio/EIAS/EIASserver
-
-    - name: Pull latest changes
-      run: git pull origin main
 
     - name: Install dependencies
       run: npm install
