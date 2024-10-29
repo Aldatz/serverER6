@@ -13,6 +13,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Change to project directory
+      run: cd /home/daw1/Escritorio/EIAS/EIASserver
+
+    - name: Pull latest changes
+      run: git pull origin main
+
     - name: Use Node.js 20.12.2
       uses: actions/setup-node@v2
       with:
@@ -21,5 +27,11 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Stop previous application (if running)
+      run: pm2 stop index || echo "App not running, nothing to stop"
+
     - name: Start application
-      run: pm2 start index
+      run: pm2 start index --update-env
+
+    - name: Save PM2 process list
+      run: pm2 save
