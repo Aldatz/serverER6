@@ -81,7 +81,7 @@ const mortimerGet = async () => {
     // Buscar usuarios excluyendo los correos especificados y seleccionando solo los campos deseados
     const players = await Player.find(
       { email: { $nin: excludedEmails } }, // Excluye los correos
-      { is_active: 1, name: 1, nickname: 1 , avatar: 1 } // Solo selecciona estos campos
+      { is_active: 1, name: 1, nickname: 1 , avatar: 1, is_inside_tower: 1, } // Solo selecciona estos campos
     );
 
     return players;
@@ -244,7 +244,7 @@ app.get('/mortimer', async (req, res) => {
 });
 
 // Cambia app.post a app.get
-app.get('/ingredients', async (req, res) => {
+app.get('/get-ingredients', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
@@ -266,33 +266,6 @@ app.get('/ingredients', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch ingredients',
-      error: error.message 
-    });
-  }
-});
-
-app.get('/potions', async (req, res) => {
-  try {
-    const url = `https://kaotika-server.fly.dev/diseases`;
-    const response = await axios.get(url);
-    
-    // Verifica si la respuesta tiene datos
-    if (response.data && response.data.data) {
-      res.json({
-        success: true,
-        potionsData: response.data.data,  // Enviar el array de ingredientes
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'No potions found',
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching potions:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch potions',
       error: error.message 
     });
   }
@@ -358,13 +331,14 @@ async function insertPlayer(playerData) {
           // Actualiza los campos necesarios sin cambiar el estado de is_active
           await Player.updateOne({ email: data.email }, {
               ...data,
-              is_active: existingPlayer.is_active // Mantén el estado existente
+              is_active: existingPlayer.is_active, // Mantén el estado existente
+              is_inside_tower: existingPlayer.is_inside_tower
           });
           console.log(`Player with email ${data.email} updated successfully.`);
           return existingPlayer;
       } else {
           data.is_active = false; // Solo para nuevos jugadores
-
+          data.is_inside_tower = false;
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
@@ -379,7 +353,6 @@ async function insertPlayer(playerData) {
           data.role = 'ACOLYTE';
           break;
       }
-
       const newPlayer = new Player(data);
       await newPlayer.save();
       console.log(`Player with email ${data.email} created successfully.`);
