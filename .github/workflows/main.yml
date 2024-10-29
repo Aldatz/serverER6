@@ -8,16 +8,18 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Use Node.js 20.12.2
       uses: actions/setup-node@v2
       with:
         node-version: 20.12.2
-    - run: /home/daw1/Escritorio/EIAS/EIASserver
-    - run: git pull
-    - run: npm install
-    - run: pm2 restart index
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Start application
+      run: pm2 start index
