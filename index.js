@@ -434,20 +434,13 @@ mqttClient.on('message', async (topic, message) => {
   }
 
   if (topic === 'EIASdoorOpened') {
-    console.log('Mensaje recibido en EIASdoorOpened:', messageStr);
-    
-    // Aquí, el mensaje puede contener el cardId del jugador que abrió la puerta
+
     try {
-      // Buscar en la base de datos un jugador con el cardId recibido
       const player = await Player.findOne({ cardId: messageStr });
 
       if (player) {
         console.log(`El jugador que abrió la puerta es: ${player.name}`);
 
-        // Publicar mensaje de confirmación de acceso en MQTT
-        mqttClient.publish('EIASOpenDoor', `Access granted to ${player.name}`);
-
-        // Emitir el evento 'door_status' solo al socket del jugador correspondiente
         if (player.socketId) {
           io.to(player.socketId).emit('door_status', { isOpen: true });
           console.log(`Evento 'door_status' emitido solo al jugador: ${player.name}`);
