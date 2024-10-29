@@ -444,7 +444,6 @@ mqttClient.on('message', async (topic, message) => {
 
 console.log("self-deployment test");
 
-
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
 mqttClient.on('message', (topic, message) => {
   if (topic === 'EIASidCard') {
