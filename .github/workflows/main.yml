@@ -8,24 +8,16 @@ on:
 
 jobs:
   build:
+
     runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Use Node.js 22.8.0
+    - name: Use Node.js 20.12.2
       uses: actions/setup-node@v2
       with:
-        node-version: 22.8.0
-
-    - name: Install dependencies
-      working-directory: EIASserver  # specify the directory
-      run: npm install
-
-    - name: Show Commit Hash
-      working-directory: EIASserver  # specify the directory
-      run: git log -1 --pretty=format:"%H - %s"
-
-    - name: Restart PM2
-      working-directory: EIASserver  # specify the directory
-      run: pm2 restart all
+        node-version: 20.12.2
+    - run: ../../
+    - run: git pull origin main
+    - run: npm install
+    - run: pm2 restart all
