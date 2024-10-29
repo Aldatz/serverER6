@@ -390,9 +390,28 @@ mqttClient.on('connect', () => {
       console.log('Suscrito al tópico EIASidCard');
     }
   });
+  mqttClient.subscribe('EIASdoorOpened', (err) => {
+    if (err) {
+      console.error('Error al suscribirse al tópico EIASdoorOpened:', err);
+    } else {
+      console.log('Suscrito al tópico EIASdoorOpened');
+    }
+  });
+});
+
+mqttClient.on('message', (topic, message) => {
+  if (topic === 'EIASdoorOpened') {
+    // Aquí puedes agregar cualquier lógica adicional si es necesario
+    console.log('Mensaje recibido en EIASdoorOpened:', message.toString());
+
+    // Emitir evento 'door_status' a los clientes conectados para indicar que la puerta está abierta
+    io.emit('door_status', "");
+  }
 });
 
 mqttClient.on('message', async (topic, message) => {
+  const messageStr = message.toString().trim();
+
   if (topic === 'EIASidCard') {
     const receivedCardId = message.toString().trim();
     try {
@@ -411,6 +430,36 @@ mqttClient.on('message', async (topic, message) => {
       }
     } catch (error) {
       console.error('Error al buscar cardId en la base de datos:', error);
+    }
+  }
+
+  if (topic === 'EIASdoorOpened') {
+    console.log('Mensaje recibido en EIASdoorOpened:', messageStr);
+    
+    // Aquí, el mensaje puede contener el cardId del jugador que abrió la puerta
+    try {
+      // Buscar en la base de datos un jugador con el cardId recibido
+      const player = await Player.findOne({ cardId: messageStr });
+
+      if (player) {
+        console.log(`El jugador que abrió la puerta es: ${player.name}`);
+
+        // Publicar mensaje de confirmación de acceso en MQTT
+        mqttClient.publish('EIASOpenDoor', `Access granted to ${player.name}`);
+
+        // Emitir el evento 'door_status' solo al socket del jugador correspondiente
+        if (player.socketId) {
+          io.to(player.socketId).emit('door_status', { isOpen: true });
+          console.log(`Evento 'door_status' emitido solo al jugador: ${player.name}`);
+        } else {
+          console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
+        }
+      } else {
+        console.log(`No se encontró un jugador con el cardId: ${messageStr}`);
+        mqttClient.publish('EIASOpenDoorDenied', 'Access Denied');
+      }
+    } catch (error) {
+      console.error('Error al buscar el cardId en la base de datos:', error);
     }
   }
 });
