@@ -419,6 +419,26 @@ mqttClient.on('connect', () => {
   });
 });
 
+mqttClient.on('message', async (topic, message) => {
+  if (topic === 'EIASidCard') {
+    const receivedCardId = message.toString().trim();
+    try {
+      // Buscar en la base de datos un jugador con el cardId recibido
+      const player = await Player.findOne({ cardId: receivedCardId });
+
+      if (player) {
+        console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
+
+        // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
+        mqttClient.publish('EIASOpenDoor', '');
+      } else {
+        console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
+      }
+    } catch (error) {
+      console.error('Error al buscar cardId en la base de datos:', error);
+    }
+  }
+});
 
 
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
