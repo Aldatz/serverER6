@@ -15,7 +15,7 @@ import mqtt from 'mqtt';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
-
+ 
 const firebaseCredentials = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -46,7 +46,6 @@ const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_SERVER}`, {
   port: process.env.MQTT_PORT || 1883,
   clientId: 'SERVER_EIAS',
 });
-
 
 // Conectar a MongoDB
 mongoose.connection.on('connected', () => console.log('connected'));
@@ -82,7 +81,7 @@ const mortimerGet = async () => {
     // Buscar usuarios excluyendo los correos especificados y seleccionando solo los campos deseados
     const players = await Player.find(
       { email: { $nin: excludedEmails } }, // Excluye los correos
-      { is_active: 1, name: 1, nickname: 1 , avatar: 1 } // Solo selecciona estos campos
+      { is_active: 1, name: 1, nickname: 1 , avatar: 1, is_inside_tower: 1, } // Solo selecciona estos campos
     );
 
     return players;
@@ -325,13 +324,21 @@ server.listen(PORT, () => {
 // Función para insertar jugador en la base de datos
 async function insertPlayer(playerData) {
   try {
-    const data = playerData.data;
-    const existingPlayer = await Player.findOne({ email: data.email });
-    if (existingPlayer) {
-      await Player.updateOne({ email: data.email }, data);
-      console.log(`Player with email ${data.email} updated successfully.`);
-      return existingPlayer;
-    } else {
+      const data = playerData.data;
+      const existingPlayer = await Player.findOne({ email: data.email });
+
+      if (existingPlayer) {
+          // Actualiza los campos necesarios sin cambiar el estado de is_active
+          await Player.updateOne({ email: data.email }, {
+              ...data,
+              is_active: existingPlayer.is_active, // Mantén el estado existente
+              is_inside_tower: existingPlayer.is_inside_tower
+          });
+          console.log(`Player with email ${data.email} updated successfully.`);
+          return existingPlayer;
+      } else {
+          data.is_active = false; // Solo para nuevos jugadores
+          data.is_inside_tower = false;
       switch (data.email) {
         case process.env.ISTVAN_EMAIL:
           data.role = 'ISTVAN';
@@ -356,7 +363,6 @@ async function insertPlayer(playerData) {
   }
 }
 
-
 mqttClient.on('error', (error) => {
   console.error('Error al conectar al broker MQTT:', error);
 });
@@ -373,10 +379,10 @@ mqttClient.on('offline', () => {
   console.log('No esta conectado al broker MQTT');
 });
 
-
 // Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
 mqttClient.on('connect', () => {
-  console.log('Connected to broker MQTT');
+  console.log('Conectado al broker MQTT');
+  console.log('comentario de prueba')
   mqttClient.subscribe('EIASidCard', (err) => {
     if (err) {
       console.error('Error al suscribirse al tópico EIASidCard:', err);
@@ -385,6 +391,28 @@ mqttClient.on('connect', () => {
     }
   });
 });
+
+mqttClient.on('message', async (topic, message) => {
+  if (topic === 'EIASidCard') {
+    const receivedCardId = message.toString().trim();
+    try {
+      // Buscar en la base de datos un jugador con el cardId recibido
+      const player = await Player.findOne({ cardId: receivedCardId });
+
+      if (player) {
+        console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
+
+        // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
+        mqttClient.publish('EIASOpenDoor', `${player.name}`);
+      } else {
+        console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
+      }
+    } catch (error) {
+      console.error('Error al buscar cardId en la base de datos:', error);
+    }
+  }
+});
+
 
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
 mqttClient.on('message', (topic, message) => {
