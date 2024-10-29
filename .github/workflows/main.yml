@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 20.12.2
-    - run: ../../
+    - run: /home/daw1/Escritorio/EIAS/EIASserver
     - run: git pull
     - run: npm install
     - run: pm2 restart index.js
