@@ -20,4 +20,4 @@ jobs:
     - run: ../../
     - run: git pull origin main
     - run: npm install
-    - run: pm2 restart index
+    - run: pm2 restart index.js
