@@ -10,8 +10,9 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
-import { log } from 'console';
+import { assert, log } from 'console';
 import mqtt from 'mqtt';
+import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -24,8 +25,7 @@ const firebaseCredentials = {
 
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
-    credential: cert(firebaseCredentials),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    credential: admin.credential.cert(serviceAccount),
 });
 
 const app = express();
@@ -497,6 +497,41 @@ mqttClient.on('message', (topic, message) => {
     // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
   }
 });
+
+
+async function sendNotification(fcmToken,title,body) {
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: title,
+      body: body,
+    },
+    data: {
+      customDataKey: 'customDataValue',
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent message:', response);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+}
+
+const fcmToken = 'fYR94OlqTKGDDmh4HnYMFg:APA91bEczTibYJoZmYEZwB1J3HOIGWLfSbhtO10-vccrn-RRNzRho6D_UyLBovpn4NqYmG_wP_G-VzFTNX_NihTeF2gMfkl60Z6uHk6z4S1meFj6L4Kp5ug';
+app.get('/send-notification', async (req, res) => {
+  try {
+
+    await sendNotification(fcmToken,"hello","there")
+
+    res.json(fcmToken); // Send the 'is_active' status as JSON
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error sending' });
+  }
+});
+
 
 // Mantener el uso de start()
 start();
