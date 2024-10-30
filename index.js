@@ -518,11 +518,20 @@ async function sendNotification(fcmToken,title,body) {
     console.error('Error sending message:', error);
   }
 }
+async function searchUserFCM(email) {
+  try {
+    const response = await Player.findOne({ email: email }).select('fcmToken');
+    return response;
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+}
 
-const fcmToken = 'fYR94OlqTKGDDmh4HnYMFg:APA91bEczTibYJoZmYEZwB1J3HOIGWLfSbhtO10-vccrn-RRNzRho6D_UyLBovpn4NqYmG_wP_G-VzFTNX_NihTeF2gMfkl60Z6uHk6z4S1meFj6L4Kp5ug';
 app.get('/send-notification', async (req, res) => {
   try {
-
+    console.log(req.body);
+    
+    const fcmToken = await searchUserFCM(req.body.email);
     await sendNotification(fcmToken,"hello","there")
 
     res.json(fcmToken); // Send the 'is_active' status as JSON

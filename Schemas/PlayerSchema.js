@@ -93,6 +93,7 @@ const playerSchema = new Schema({
   experience: { type: Number},
   is_active: { type: Boolean, default: false},
   is_inside_tower: { type: Boolean, default: false},
+  fcmToken: { type: String },
   avatar: { type: String },
   created_date: { type: Date},
   gold: { type: Number},
