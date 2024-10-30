@@ -12,15 +12,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Obtiene todo el historial de commits
 
-    - name: Change to project directory
-      run: cd /home/daw1/Escritorio/EIAS/EIASserver
-
-    - name: Pull latest changes
-      run: git pull origin main
+    - name: Change to project directory and pull latest changes
+      run: |
+        cd /home/daw1/Escritorio/EIAS/EIASserver
+        git pull origin main
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        cd /home/daw1/Escritorio/EIAS/EIASserver
+        npm install
 
     - name: Restart
-      run: pm2 restart all
+      run: |
+        cd /home/daw1/Escritorio/EIAS/EIASserver
+        pm2 restart all
