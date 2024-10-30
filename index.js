@@ -91,6 +91,22 @@ const mortimerGet = async () => {
   }
 };
 
+app.post('/isInsideTower', async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(email); // Check if the email is coming correctly
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const isInsideTower = await getUserIsInsideTower(email);
+    res.json(isInsideTower); // Send the 'is_active' status as JSON
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error fetching players' });
+  }
+});
 
 app.post('/isInside', async (req, res) => {
   try {
@@ -108,6 +124,21 @@ app.post('/isInside', async (req, res) => {
     res.status(500).json({ error: 'Error fetching players' });
   }
 });
+const getUserIsInsideTower = async (email) => {
+  try {
+    // Find the user by email and select the 'is_active' field
+    const isInsideTower = await Player.findOne({ email: email }).select('is_inside_tower');
+    if (isInsideTower) {
+      console.log(isInsideTower.is_inside_tower); // Log the 'is_active' status
+    } else {
+      console.log('User not found');
+    }
+    return isInsideTower;
+  } catch (error) {
+    console.error('Error fetching IsInside:', error);
+    throw error;
+  }
+};
 
 const getUserIsInside = async (email) => {
   try {
@@ -500,3 +531,4 @@ mqttClient.on('message', (topic, message) => {
 
 // Mantener el uso de start()
 start();
+                                                      
