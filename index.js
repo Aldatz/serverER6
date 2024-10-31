@@ -10,8 +10,8 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
+import { log } from 'console';
 import mqtt from 'mqtt';
-import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -24,7 +24,8 @@ const firebaseCredentials = {
 
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: cert(firebaseCredentials),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
 const app = express();
@@ -91,27 +92,21 @@ const mortimerGet = async () => {
 };
 
 app.post('/isInsideTower', async (req, res) => {
-  const { email, is_inside_tower } = req.body;
-
-  // Aquí deberías realizar la lógica para actualizar el estado en la base de datos
   try {
-      const user = await Player.findOneAndUpdate(
-          { email: email },
-          { is_inside_tower: is_inside_tower },
-          { new: true }
-      );
+    const { email } = req.body;
+    console.log(email); // Check if the email is coming correctly
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
 
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
-
-      res.status(200).json({ is_inside_tower: Player.is_inside_tower });
+    const isInsideTower = await getUserIsInsideTower(email);
+    res.json(isInsideTower); // Send the 'is_active' status as JSON
   } catch (error) {
-      console.error('Error updating user in DB:', error);
-      res.status(500).json({ message: 'Error updating user in database' });
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error fetching players' });
   }
 });
-
 
 app.post('/isInside', async (req, res) => {
   try {
@@ -534,60 +529,6 @@ mqttClient.on('message', (topic, message) => {
     // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
   }
 });
-
-
-async function sendNotification(fcmToken,title,body) {
-  const message = {
-    token: fcmToken,
-    notification: {
-      title: title,
-      body: body,
-    },
-    data: {
-      customDataKey: 'customDataValue',
-    },
-  };
-
-  try {
-    const response = await admin.messaging().send(message);
-    console.log('Successfully sent message:', response);
-  } catch (error) {
-    console.error('Error sending message:', error);
-  }
-}
-async function searchUserFCM(email) {
-  try {
-    const response = await Player.findOne({ email: email }).select('fcmToken');
-    if (response && response.fcmToken) {
-      return response.fcmToken;
-    } else {
-      throw new Error('FCM token not found for the specified user');
-    }
-  } catch (error) {
-    console.error('Error retrieving FCM token:', error);
-    throw error;
-  }
-}
-
-app.get('/send-notification', async (req, res) => {
-  try {
-    console.log(req.body);
-
-    const fcmToken = await searchUserFCM(req.body.email);
-    if (!fcmToken) {
-      return res.status(404).json({ error: 'FCM token not found' });
-    }
-
-    await sendNotification(fcmToken, "hello", "there");
-
-    res.json({ message: 'Notification sent successfully' });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error sending notification' });
-  }
-});
-
-
 
 // Mantener el uso de start()
 start();
