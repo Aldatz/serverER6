@@ -92,21 +92,27 @@ const mortimerGet = async () => {
 };
 
 app.post('/isInsideTower', async (req, res) => {
-  try {
-    const { email } = req.body;
-    console.log(email); // Check if the email is coming correctly
-    
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
+  const { email, is_inside_tower } = req.body;
 
-    const isInsideTower = await getUserIsInsideTower(email);
-    res.json(isInsideTower); // Send the 'is_active' status as JSON
+  // Aquí deberías realizar la lógica para actualizar el estado en la base de datos
+  try {
+      const user = await User.findOneAndUpdate(
+          { email: email },
+          { is_inside_tower: is_inside_tower },
+          { new: true }
+      );
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({ is_inside_tower: user.is_inside_tower });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error fetching players' });
+      console.error('Error updating user in DB:', error);
+      res.status(500).json({ message: 'Error updating user in database' });
   }
 });
+
 
 app.post('/isInside', async (req, res) => {
   try {
