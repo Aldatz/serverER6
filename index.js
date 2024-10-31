@@ -334,12 +334,16 @@ app.get('/potions', async (req, res) => {
 
 // Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
-  const { idToken, email, socketId } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
+  const { idToken, email, socketId, fcmToken } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
   console.log("Email recibido:", email);
   console.log("Socket ID recibido:", socketId);
+  console.log("FCM Token recibido:", fcmToken);
 
   if (!idToken) {
     return res.status(400).json({ error: 'No se proporcionó el idToken' });
+  }
+  if (!fcmToken) {
+    return res.status(400).json({ error: 'No se proporcionó el fcmToken' });
   }
 
   try {
@@ -357,8 +361,11 @@ app.post('/verify-token', async (req, res) => {
     const player = await Player.findOne({ email });
     if (player) {
       player.socketId = socketId; // Asignamos el socketId recibido
+      player.fcmToken = fcmToken;
       await player.save();        // Guardamos los cambios en la base de datos
       console.log(`Socket ID ${socketId} asignado al jugador con email: ${email}`);
+      console.log(`FCM Token: ${fcmToken} asignado al jugador con email: ${email}`);
+
     }
 
     // Responder con los datos
@@ -393,7 +400,7 @@ async function insertPlayer(playerData) {
           await Player.updateOne({ email: data.email }, {
               ...data,
               is_active: existingPlayer.is_active, // Mantén el estado existente
-              is_inside_tower: existingPlayer.is_inside_tower
+              is_inside_tower: existingPlayer.is_inside_tower,
           });
           console.log(`Player with email ${data.email} updated successfully.`);
           return existingPlayer;
