@@ -564,10 +564,14 @@ async function searchUserFCM(email) {
 }
 
 app.get('/send-notification', async (req, res) => {
+  console.log("SENDING NOTIFICATION");
+  
   try {
     console.log(req.body);
 
     const fcmToken = await searchUserFCM(req.body.email);
+    console.log(fcmToken);
+    
     if (!fcmToken) {
       return res.status(404).json({ error: 'FCM token not found' });
     }
