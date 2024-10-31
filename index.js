@@ -95,7 +95,7 @@ app.post('/isInsideTower', async (req, res) => {
 
   // Aquí deberías realizar la lógica para actualizar el estado en la base de datos
   try {
-      const user = await User.findOneAndUpdate(
+      const user = await Player.findOneAndUpdate(
           { email: email },
           { is_inside_tower: is_inside_tower },
           { new: true }
@@ -105,7 +105,7 @@ app.post('/isInsideTower', async (req, res) => {
           return res.status(404).json({ message: 'User not found' });
       }
 
-      res.status(200).json({ is_inside_tower: user.is_inside_tower });
+      res.status(200).json({ is_inside_tower: Player.is_inside_tower });
   } catch (error) {
       console.error('Error updating user in DB:', error);
       res.status(500).json({ message: 'Error updating user in database' });
