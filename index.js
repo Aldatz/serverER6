@@ -521,6 +521,7 @@ async function sendNotification(fcmToken,title,body) {
 async function searchUserFCM(email) {
   try {
     const response = await Player.findOne({ email: email }).select('fcmToken');
+    console.log(response);
     return response;
   } catch (error) {
     console.error('Error sending message:', error);
