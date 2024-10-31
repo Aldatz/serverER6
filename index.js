@@ -11,7 +11,6 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import mqtt from 'mqtt';
-import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
