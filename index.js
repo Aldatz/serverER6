@@ -571,7 +571,43 @@ async function searchUserFCM(email) {
   }
 }
 
+async function searchUsersWithRole(role) {
+  try {
+    const users = await Player.find({ role: role }).select('fcmToken');
+    if (users && users.length > 0) {
+      // Map to retrieve only fcmTokens
+      return users.map(user => user.fcmToken).filter(token => token); // Filter out any undefined tokens
+    } else {
+      throw new Error(`No users found with role: ${role}`);
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM tokens for role:', error);
+    throw error;
+  }
+}
 app.post('/send-notification', async (req, res) => {
+  console.log("SENDING NOTIFICATION TO ALL MORTIMERS");
+
+  try {
+    // Fetch all tokens of users with role "MORTIMER"
+    const fcmTokens = await searchUsersWithRole("MORTIMER");
+    console.log("FCM tokens found:", fcmTokens);
+
+    if (fcmTokens.length === 0) {
+      return res.status(404).json({ error: 'No FCM tokens found for role MORTIMER' });
+    }
+
+    // Send notification to each token
+    await Promise.all(fcmTokens.map(token => sendNotification(token, "hello", "there")));
+
+    res.json({ message: 'Notification sent successfully to all MORTIMERS' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error sending notifications' });
+  }
+});
+
+app.post('/send-notification-sample', async (req, res) => {
   console.log("SENDING NOTIFICATION");
   
   try {
