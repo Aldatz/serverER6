@@ -10,8 +10,8 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
-import { log } from 'console';
 import mqtt from 'mqtt';
+import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -127,10 +127,10 @@ app.post('/isInside', async (req, res) => {
 
 const getUserIsInsideTower = async (email) => {
   try {
-    // Find the user by email and select the 'is_active' field
+    // Find the user by email and select the 'is_inside_tower' field
     const isInsideTower = await Player.findOne({ email: email }).select('is_inside_tower');
     if (isInsideTower) {
-      console.log(isInsideTower.is_inside_tower); // Log the 'is_active' status
+      console.log(isInsideTower.is_inside_tower); // Log the 'is_inside_tower' status
     } else {
       console.log('User not found');
     }
@@ -334,12 +334,16 @@ app.get('/potions', async (req, res) => {
 
 // Ruta para verificar token
 app.post('/verify-token', async (req, res) => {
-  const { idToken, email, socketId } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
+  const { idToken, email, socketId, fcmToken } = req.body; // Asegúrate de que se envíe el socketId desde el cliente
   console.log("Email recibido:", email);
   console.log("Socket ID recibido:", socketId);
+  console.log("FCM Token recibido:", fcmToken);
 
   if (!idToken) {
     return res.status(400).json({ error: 'No se proporcionó el idToken' });
+  }
+  if (!fcmToken) {
+    return res.status(400).json({ error: 'No se proporcionó el fcmToken' });
   }
 
   try {
@@ -357,8 +361,11 @@ app.post('/verify-token', async (req, res) => {
     const player = await Player.findOne({ email });
     if (player) {
       player.socketId = socketId; // Asignamos el socketId recibido
+      player.fcmToken = fcmToken;
       await player.save();        // Guardamos los cambios en la base de datos
       console.log(`Socket ID ${socketId} asignado al jugador con email: ${email}`);
+      console.log(`FCM Token: ${fcmToken} asignado al jugador con email: ${email}`);
+
     }
 
     // Responder con los datos
@@ -393,7 +400,7 @@ async function insertPlayer(playerData) {
           await Player.updateOne({ email: data.email }, {
               ...data,
               is_active: existingPlayer.is_active, // Mantén el estado existente
-              is_inside_tower: existingPlayer.is_inside_tower
+              is_inside_tower: existingPlayer.is_inside_tower,
           });
           console.log(`Player with email ${data.email} updated successfully.`);
           return existingPlayer;
@@ -529,6 +536,100 @@ mqttClient.on('message', (topic, message) => {
     // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
   }
 });
+
+
+async function sendNotification(fcmToken,title,body) {
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: title,
+      body: body,
+    },
+    data: {
+      customDataKey: 'customDataValue',
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent message:', response);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+}
+async function searchUserFCM(email) {
+  try {
+    const response = await Player.findOne({ email: email }).select('fcmToken');
+    if (response && response.fcmToken) {
+      return response.fcmToken;
+    } else {
+      throw new Error('FCM token not found for the specified user');
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM token:', error);
+    throw error;
+  }
+}
+
+async function searchUsersWithRole(role) {
+  try {
+    const users = await Player.find({ role: role }).select('fcmToken');
+    if (users && users.length > 0) {
+      // Map to retrieve only fcmTokens
+      return users.map(user => user.fcmToken).filter(token => token); // Filter out any undefined tokens
+    } else {
+      throw new Error(`No users found with role: ${role}`);
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM tokens for role:', error);
+    throw error;
+  }
+}
+app.post('/send-notification', async (req, res) => {
+  console.log("SENDING NOTIFICATION TO ALL MORTIMERS");
+
+  try {
+    // Fetch all tokens of users with role "MORTIMER"
+    const fcmTokens = await searchUsersWithRole("MORTIMER");
+    console.log("FCM tokens found:", fcmTokens);
+
+    if (fcmTokens.length === 0) {
+      return res.status(404).json({ error: 'No FCM tokens found for role MORTIMER' });
+    }
+
+    // Send notification to each token
+    await Promise.all(fcmTokens.map(token => sendNotification(token, "hello", "there")));
+
+    res.json({ message: 'Notification sent successfully to all MORTIMERS' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error sending notifications' });
+  }
+});
+
+app.post('/send-notification-sample', async (req, res) => {
+  console.log("SENDING NOTIFICATION");
+  
+  try {
+    const { email } = req.body;
+    console.log("Email", email);    
+    const fcmToken = await searchUserFCM(email);
+    console.log("Fcm token", fcmToken);
+    
+    if (!fcmToken) {
+      return res.status(404).json({ error: 'FCM token not found' });
+    }
+
+    await sendNotification(fcmToken, "hello", "there");
+
+    res.json({ message: 'Notification sent successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error sending notification' });
+  }
+});
+
+
 
 // Mantener el uso de start()
 start();
