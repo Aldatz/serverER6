@@ -90,22 +90,21 @@ const mortimerGet = async () => {
     throw error;
   }
 };
-app.post('/updateIsInside', async (req, res) => {
-  try {
-    const { email, isInside } = req.body;
-    console.log('Actualizando estado para el correo:', email, 'isInside:', isInside);
 
+app.post('/isInsideTower', async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(email); // Check if the email is coming correctly
+    
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Lógica para actualizar el estado en la base de datos
-    await Player.updateOne({ email: email }, { is_inside_tower: isInside });
-
-    res.status(200).json({ success: true });
+    const isInsideTower = await getUserIsInsideTower(email);
+    res.json(isInsideTower); // Send the 'is_active' status as JSON
   } catch (error) {
-    console.error('Error actualizando estado:', error);
-    res.status(500).json({ error: 'Error updating status' });
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error fetching players' });
   }
 });
 
