@@ -10,7 +10,6 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
-import { assert, log } from 'console';
 import mqtt from 'mqtt';
 import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
 
@@ -521,26 +520,35 @@ async function sendNotification(fcmToken,title,body) {
 async function searchUserFCM(email) {
   try {
     const response = await Player.findOne({ email: email }).select('fcmToken');
-    console.log(response);
-    return response;
+    if (response && response.fcmToken) {
+      return response.fcmToken;
+    } else {
+      throw new Error('FCM token not found for the specified user');
+    }
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('Error retrieving FCM token:', error);
+    throw error;
   }
 }
 
 app.get('/send-notification', async (req, res) => {
   try {
     console.log(req.body);
-    
-    const fcmToken = await searchUserFCM(req.body.email);
-    await sendNotification(fcmToken,"hello","there")
 
-    res.json(fcmToken); // Send the 'is_active' status as JSON
+    const fcmToken = await searchUserFCM(req.body.email);
+    if (!fcmToken) {
+      return res.status(404).json({ error: 'FCM token not found' });
+    }
+
+    await sendNotification(fcmToken, "hello", "there");
+
+    res.json({ message: 'Notification sent successfully' });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Error sending' });
+    res.status(500).json({ error: 'Error sending notification' });
   }
 });
+
 
 
 // Mantener el uso de start()
