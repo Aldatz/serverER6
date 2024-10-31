@@ -12,6 +12,7 @@ import http from 'http';
 import { start } from 'repl';
 import mqtt from 'mqtt';
 import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
+import { log } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -126,10 +127,10 @@ app.post('/isInside', async (req, res) => {
 
 const getUserIsInsideTower = async (email) => {
   try {
-    // Find the user by email and select the 'is_active' field
+    // Find the user by email and select the 'is_inside_tower' field
     const isInsideTower = await Player.findOne({ email: email }).select('is_inside_tower');
     if (isInsideTower) {
-      console.log(isInsideTower.is_inside_tower); // Log the 'is_active' status
+      console.log(isInsideTower.is_inside_tower); // Log the 'is_inside_tower' status
     } else {
       console.log('User not found');
     }
@@ -563,14 +564,14 @@ async function searchUserFCM(email) {
   }
 }
 
-app.get('/send-notification', async (req, res) => {
+app.post('/send-notification', async (req, res) => {
   console.log("SENDING NOTIFICATION");
   
   try {
-    console.log(req.body);
-
-    const fcmToken = await searchUserFCM(req.body.email);
-    console.log(fcmToken);
+    const { email } = req.body;
+    console.log("Email", email);    
+    const fcmToken = await searchUserFCM(email);
+    console.log("Fcm token", fcmToken);
     
     if (!fcmToken) {
       return res.status(404).json({ error: 'FCM token not found' });
