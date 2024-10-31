@@ -11,8 +11,6 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import mqtt from 'mqtt';
-import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
-import { log } from 'console';
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -25,7 +23,8 @@ const firebaseCredentials = {
 
 // Inicializa Firebase Admin usando las credenciales del archivo .env
 initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: cert(firebaseCredentials),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
 const app = express();
