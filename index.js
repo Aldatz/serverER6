@@ -11,7 +11,7 @@ import { Server } from 'socket.io';
 import http from 'http';
 import { start } from 'repl';
 import mqtt from 'mqtt';
-import serviceAccount from './eias-ab66d-e48e16bc8cba.json' assert {type: "json"};
+import serviceAccount from './eias-ab66d-e48e16bc8cba.json' with {type: "json"};
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -633,7 +633,7 @@ app.post('/send-notification', async (req, res) => {
     }
 
     // Send notification to each token
-    await Promise.all(fcmTokens.map(token => sendNotification(token, "hello", "there")));
+    await Promise.all(fcmTokens.map(token => sendNotification(token, "Acces granted to", email)));
 
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
   } catch (error) {
@@ -655,7 +655,7 @@ app.post('/send-notification-sample', async (req, res) => {
       return res.status(404).json({ error: 'FCM token not found' });
     }
 
-    await sendNotification(fcmToken, "hello", "there");
+    await sendNotification(fcmToken, "Acces granted to", email);
 
     res.json({ message: 'Notification sent successfully' });
   } catch (error) {
