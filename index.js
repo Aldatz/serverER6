@@ -641,14 +641,14 @@ app.post('/send-notification', async (req, res) => {
     const fcmTokens = await searchUsersWithRole("MORTIMER");
     const userAcces = await searchUsersWithEmail(req.body.email)
     console.log("FCM tokens found:", fcmTokens);
-    console.log("USER:", userAcces);
+    console.log("USER:", userAcces[0]);
 
     if (fcmTokens.length === 0) {
       return res.status(404).json({ error: 'No FCM tokens found for role MORTIMER' });
     }
 
     // Send notification to each token
-    await Promise.all(fcmTokens.map(token => sendNotification(token, "Acces granted to", userAcces)));
+    await Promise.all(fcmTokens.map(token => sendNotification(token, "Acces granted to", userAcces[0])));
 
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
   } catch (error) {
