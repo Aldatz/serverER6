@@ -508,7 +508,7 @@ mqttClient.on('message', (topic, message) => {
     console.log('Mensaje recibido en EIASdoorOpened:', message.toString());
 
     // Emitir evento 'door_status' a los clientes conectados para indicar que la puerta está abierta
-    io.emit('door_status', "");
+    io.emit('pushNotification', "");
   }
 });
 
@@ -546,7 +546,7 @@ mqttClient.on('message', async (topic, message) => {
 
         if (player.socketId) {
           io.to(player.socketId).emit('door_status', { isOpen: true });
-          console.log(`Evento 'door_status' emitido solo al jugador: ${player.name}`);
+          console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
         } else {
           console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
         }
