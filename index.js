@@ -641,6 +641,7 @@ app.post('/send-notification', async (req, res) => {
     const fcmTokens = await searchUsersWithRole("MORTIMER");
     const userAcces = await searchUsersWithEmail(req.body.email)
     console.log("FCM tokens found:", fcmTokens);
+    console.log("USER:", userAcces);
 
     if (fcmTokens.length === 0) {
       return res.status(404).json({ error: 'No FCM tokens found for role MORTIMER' });
