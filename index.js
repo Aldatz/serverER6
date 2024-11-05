@@ -560,9 +560,6 @@ mqttClient.on('message', async (topic, message) => {
   }
 });
 
-console.log("self-deployment test Sergio_17");
-console.log("self-deployment test Sergio_18");
-
 // Manejar mensajes recibidos en el tópico 'EIASidCard'
 mqttClient.on('message', (topic, message) => {
   if (topic === 'EIASidCard') {
@@ -620,12 +617,27 @@ async function searchUsersWithRole(role) {
     throw error;
   }
 }
+async function searchUsersWithEmail(email) {
+  try {
+    const users = await Player.find({ email: email}).select('name');
+    if (users && users.length > 0) {
+      return users.map(user => user.name); // Retorna solo el nombre
+    } else {
+      throw new Error(`No se encontraron usuarios con el email: ${email}`);
+    }
+  } catch (error) {
+    console.error('Error al recuperar los nombres:', error);
+    throw error;
+  }
+}
+
 app.post('/send-notification', async (req, res) => {
   console.log("SENDING NOTIFICATION TO ALL MORTIMERS");
 
   try {
     // Fetch all tokens of users with role "MORTIMER"
     const fcmTokens = await searchUsersWithRole("MORTIMER");
+    const userAcces = await searchUsersWithEmail(email)
     console.log("FCM tokens found:", fcmTokens);
 
     if (fcmTokens.length === 0) {
@@ -633,7 +645,7 @@ app.post('/send-notification', async (req, res) => {
     }
 
     // Send notification to each token
-    await Promise.all(fcmTokens.map(token => sendNotification(token, "Acces granted to", email)));
+    await Promise.all(fcmTokens.map(token => sendNotification(token, "Acces granted to", userAcces)));
 
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
   } catch (error) {
