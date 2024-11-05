@@ -123,6 +123,43 @@ app.post('/isInside', async (req, res) => {
   }
 });
 
+app.post('/patchPlayer', async (req, res) => {
+  try {
+    const { player } = req.body;
+    console.log(player); // Check if the player is coming correctly
+    await updatePlayerByEmail(player.email, player)
+    if (!player) {
+      return res.status(400).json({ error: 'Player is required' });
+    }
+
+    res.json({success: 'Player Updated'});
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error fetching players' });
+  }
+});
+
+async function updatePlayerByEmail(email, updateData) {
+  try {
+    const updatedPlayer = await Player.findOneAndUpdate(
+      { email },                  // Filter based on email
+      { $set: updateData },       // Set only the fields provided in updateData
+      { new: true, runValidators: true } // Options to return the updated doc and validate data
+    );
+
+    if (!updatedPlayer) {
+      console.log('Player not found');
+      return null;
+    }
+
+    console.log('Player updated successfully:', updatedPlayer);
+    return updatedPlayer;
+  } catch (error) {
+    console.error('Error updating player:', error);
+    throw error;
+  }
+}
+
 const getUserIsInsideTower = async (email) => {
   try {
     // Find the user by email and select the 'is_inside_tower' field

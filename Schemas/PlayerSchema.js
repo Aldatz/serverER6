@@ -94,6 +94,7 @@ const playerSchema = new Schema({
   is_active: { type: Boolean, default: false},
   is_inside_tower: { type: Boolean, default: false},
   fcmToken: { type: String },
+  cardId: { type: String },
   avatar: { type: String },
   created_date: { type: Date},
   gold: { type: Number},
