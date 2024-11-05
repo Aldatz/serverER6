@@ -633,11 +633,13 @@ async function searchUsersWithEmail(email) {
 
 app.post('/send-notification', async (req, res) => {
   console.log("SENDING NOTIFICATION TO ALL MORTIMERS");
+  console.log(req.body);
+  
 
   try {
     // Fetch all tokens of users with role "MORTIMER"
     const fcmTokens = await searchUsersWithRole("MORTIMER");
-    const userAcces = await searchUsersWithEmail(email)
+    const userAcces = await searchUsersWithEmail(req.body.email)
     console.log("FCM tokens found:", fcmTokens);
 
     if (fcmTokens.length === 0) {
