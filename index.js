@@ -40,10 +40,19 @@ const io = new Server(server, {
     }
 });
 
-const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_SERVER}`, {
-  port: process.env.MQTT_PORT || 1883,
+const fs = require('fs');
+
+const options = {
+  port: process.env.MQTT_PORT || 8883,
   clientId: 'SERVER_EIAS',
-});
+  ca: fs.readFileSync('/certificates/server.crt'),           // Certificado de la CA (si es necesario)
+  cert: fs.readFileSync('/certificates/eiasServer.crt'),     // Certificado del cliente
+  key: fs.readFileSync('/certificates/eias.key'),      // Clave privada
+  rejectUnauthorized: true,  
+};
+
+// Conectar usando MQTT sobre SSL/TLS
+const mqttClient = mqtt.connect(`mqtts://${process.env.MQTT_SERVER}`, options);
 
 // Conectar a MongoDB
 mongoose.connection.on('connected', () => console.log('connected'));
