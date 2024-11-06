@@ -235,6 +235,18 @@ io.on('connection', async (socket) => {
     socket.emit('error', { message: 'Error al obtener el correo del jugador' });
   }
 
+  socket.on('location', async (data) => {
+    const { location, email } = data;
+    try {
+      const acolyte = await Player.findOne({ email: email });
+      acolyte.location = location;
+      await acolyte.save();
+    }
+    catch (error) {
+      console.error('Error');
+    }
+  });
+
   // Escucha de un evento personalizado (ejemplo de evento para cambiar el estado de un Acolyte)
   socket.on('scan_acolyte', async (data) => {
     const { scannedEmail } = data;
@@ -541,23 +553,27 @@ mqttClient.on('message', async (topic, message) => {
     try {
       const player = await Player.findOne({ cardId: messageStr });
 
-      if (player) {
-        console.log(`El jugador que abrió la puerta es: ${player.name}`);
-
-        if (player.socketId) {
-          console.log(player.is_inside_tower);
-          
-          player.is_inside_tower = !player.is_inside_tower;
-          await player.save();
-          console.log(player.is_inside_tower);
-          io.to(player.socketId).emit('door_status', { isOpen: true });
-          console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
+      if (player.location != "Tower") {
+        console.log(`El acolito no se encuentra en la torre`);
+      }
+      else{
+        if (player) {
+          console.log(`El jugador que abrió la puerta es: ${player.name}`);
+  
+          if (player.socketId) {
+            console.log(player.is_inside_tower);
+            player.is_inside_tower = !player.is_inside_tower;
+            await player.save();
+            console.log(player.is_inside_tower);
+            io.to(player.socketId).emit('door_status', { isOpen: true });
+            console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
+          } else {
+            console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
+          }
         } else {
-          console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
+          console.log(`No se encontró un jugador con el cardId: ${messageStr}`);
+          mqttClient.publish('EIASOpenDoorDenied', 'Access Denied');
         }
-      } else {
-        console.log(`No se encontró un jugador con el cardId: ${messageStr}`);
-        mqttClient.publish('EIASOpenDoorDenied', 'Access Denied');
       }
     } catch (error) {
       console.error('Error al buscar el cardId en la base de datos:', error);
