@@ -545,6 +545,7 @@ mqttClient.on('message', async (topic, message) => {
         console.log(`El jugador que abrió la puerta es: ${player.name}`);
 
         if (player.socketId) {
+          player.is_inside_tower = !player.is_inside_tower;
           io.to(player.socketId).emit('door_status', { isOpen: true });
           console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
         } else {
