@@ -474,113 +474,113 @@ async function insertPlayer(playerData) {
   }
 }
 
-mqttClient.on('error', (error) => {
-  console.error('Error al conectar al broker MQTT:', error);
-});
+// mqttClient.on('error', (error) => {
+//   console.error('Error al conectar al broker MQTT:', error);
+// });
 
-mqttClient.on('reconnect', () => {
-  console.log('Reintentando conectar al broker MQTT');
-});
+// mqttClient.on('reconnect', () => {
+//   console.log('Reintentando conectar al broker MQTT');
+// });
 
-mqttClient.on('close', () => {
-  console.log('Conexión al broker MQTT cerrada');
-});
+// mqttClient.on('close', () => {
+//   console.log('Conexión al broker MQTT cerrada');
+// });
 
-mqttClient.on('offline', () => {
-  console.log('No esta conectado al broker MQTT');
-});
+// mqttClient.on('offline', () => {
+//   console.log('No esta conectado al broker MQTT');
+// });
 
-// Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
-mqttClient.on('connect', () => {
-  console.log('Conectado al broker MQTT');
-  console.log('comentario de prueba')
-  mqttClient.subscribe('EIASidCard', (err) => {
-    if (err) {
-      console.error('Error al suscribirse al tópico EIASidCard:', err);
-    } else {
-      console.log('Suscrito al tópico EIASidCard');
-    }
-  });
-  mqttClient.subscribe('EIASdoorOpened', (err) => {
-    if (err) {
-      console.error('Error al suscribirse al tópico EIASdoorOpened:', err);
-    } else {
-      console.log('Suscrito al tópico EIASdoorOpened');
-    }
-  });
-});
+// // Suscribirse al tópico 'EIASidCard' cuando el cliente se conecta al broker cambiar nombre para otro tipo de mensajes
+// mqttClient.on('connect', () => {
+//   console.log('Conectado al broker MQTT');
+//   console.log('comentario de prueba')
+//   mqttClient.subscribe('EIASidCard', (err) => {
+//     if (err) {
+//       console.error('Error al suscribirse al tópico EIASidCard:', err);
+//     } else {
+//       console.log('Suscrito al tópico EIASidCard');
+//     }
+//   });
+//   mqttClient.subscribe('EIASdoorOpened', (err) => {
+//     if (err) {
+//       console.error('Error al suscribirse al tópico EIASdoorOpened:', err);
+//     } else {
+//       console.log('Suscrito al tópico EIASdoorOpened');
+//     }
+//   });
+// });
 
-mqttClient.on('message', (topic, message) => {
-  if (topic === 'EIASdoorOpened') {
-    // Aquí puedes agregar cualquier lógica adicional si es necesario
-    console.log('Mensaje recibido en EIASdoorOpened:', message.toString());
+// mqttClient.on('message', (topic, message) => {
+//   if (topic === 'EIASdoorOpened') {
+//     // Aquí puedes agregar cualquier lógica adicional si es necesario
+//     console.log('Mensaje recibido en EIASdoorOpened:', message.toString());
 
-    // Emitir evento 'door_status' a los clientes conectados para indicar que la puerta está abierta
-    io.emit('pushNotification', "");
-  }
-});
+//     // Emitir evento 'door_status' a los clientes conectados para indicar que la puerta está abierta
+//     io.emit('pushNotification', "");
+//   }
+// });
 
-mqttClient.on('message', async (topic, message) => {
-  const messageStr = message.toString().trim();
+// mqttClient.on('message', async (topic, message) => {
+//   const messageStr = message.toString().trim();
 
-  if (topic === 'EIASidCard') {
-    const receivedCardId = message.toString().trim();
-    try {
-      // Buscar en la base de datos un jugador con el cardId recibido
-      const player = await Player.findOne({ cardId: receivedCardId });
+//   if (topic === 'EIASidCard') {
+//     const receivedCardId = message.toString().trim();
+//     try {
+//       // Buscar en la base de datos un jugador con el cardId recibido
+//       const player = await Player.findOne({ cardId: receivedCardId });
 
-      if (player) {
-        console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
+//       if (player) {
+//         console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
 
-        // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
-        mqttClient.publish('EIASOpenDoor', `${player.name}`);
-      } else {
-        console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
+//         // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
+//         mqttClient.publish('EIASOpenDoor', `${player.name}`);
+//       } else {
+//         console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
 
-        mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied');
-      }
-    } catch (error) {
-      console.error('Error al buscar cardId en la base de datos:', error);
-    }
-  }
+//         mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied');
+//       }
+//     } catch (error) {
+//       console.error('Error al buscar cardId en la base de datos:', error);
+//     }
+//   }
 
-  if (topic === 'EIASdoorOpened') {
+//   if (topic === 'EIASdoorOpened') {
 
-    try {
-      const player = await Player.findOne({ cardId: messageStr });
+//     try {
+//       const player = await Player.findOne({ cardId: messageStr });
 
-      if (player) {
-        console.log(`El jugador que abrió la puerta es: ${player.name}`);
+//       if (player) {
+//         console.log(`El jugador que abrió la puerta es: ${player.name}`);
 
-        if (player.socketId) {
-          console.log(player.is_inside_tower);
+//         if (player.socketId) {
+//           console.log(player.is_inside_tower);
           
-          player.is_inside_tower = !player.is_inside_tower;
-          await player.save();
-          console.log(player.is_inside_tower);
-          io.to(player.socketId).emit('door_status', { isOpen: true });
-          console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
-        } else {
-          console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
-        }
-      } else {
-        console.log(`No se encontró un jugador con el cardId: ${messageStr}`);
-        mqttClient.publish('EIASOpenDoorDenied', 'Access Denied');
-      }
-    } catch (error) {
-      console.error('Error al buscar el cardId en la base de datos:', error);
-    }
-  }
-});
+//           player.is_inside_tower = !player.is_inside_tower;
+//           await player.save();
+//           console.log(player.is_inside_tower);
+//           io.to(player.socketId).emit('door_status', { isOpen: true });
+//           console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
+//         } else {
+//           console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
+//         }
+//       } else {
+//         console.log(`No se encontró un jugador con el cardId: ${messageStr}`);
+//         mqttClient.publish('EIASOpenDoorDenied', 'Access Denied');
+//       }
+//     } catch (error) {
+//       console.error('Error al buscar el cardId en la base de datos:', error);
+//     }
+//   }
+// });
 
-// Manejar mensajes recibidos en el tópico 'EIASidCard'
-mqttClient.on('message', (topic, message) => {
-  if (topic === 'EIASidCard') {
-    const uid = message.toString(); // Convierte el mensaje a string
-    console.log(`UID recibido: ${uid}`);
-    // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
-  }
-});
+// // Manejar mensajes recibidos en el tópico 'EIASidCard'
+// mqttClient.on('message', (topic, message) => {
+//   if (topic === 'EIASidCard') {
+//     const uid = message.toString(); // Convierte el mensaje a string
+//     console.log(`UID recibido: ${uid}`);
+//     // Aquí puedes agregar la lógica para manejar el UID recibido si es necesario
+//   }
+// });
 
 
 async function sendNotification(fcmToken,title,body) {
