@@ -12,6 +12,7 @@ import http from 'http';
 import { start } from 'repl';
 import mqtt from 'mqtt';
 import serviceAccount from './eias-ab66d-e48e16bc8cba.json' with {type: "json"};
+import fs from 'fs'
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();
@@ -39,8 +40,6 @@ const io = new Server(server, {
         methods: ['GET', 'POST']
     }
 });
-
-const fs = require('fs');
 
 const options = {
   port: process.env.MQTT_PORT || 8883,
