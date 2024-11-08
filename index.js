@@ -302,6 +302,22 @@ io.on('connection', async (socket) => {
     }
   });
 
+  socket.on('is_inside_tower', () => {
+    console.log('Se ha recibido un evento is_inside_tower');
+
+    // Cambiar el nombre del tópico a 'EIASAcolyteInside'
+    const topic = 'EIASAcolyteInside';
+
+    // Publicar un mensaje vacío en el tópico MQTT
+    mqttClient.publish(topic, '', (err) => {  // Publicando mensaje vacío
+      if (err) {
+        console.error('Error al publicar en MQTT:', err);
+      } else {
+        console.log('Publicado en MQTT:', topic, 'Mensaje vacío');
+      }
+    });
+  });
+
   // Desconexión
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
