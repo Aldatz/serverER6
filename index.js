@@ -305,17 +305,8 @@ io.on('connection', async (socket) => {
   socket.on('is_inside_tower', () => {
     console.log('Se ha recibido un evento is_inside_tower');
 
-    // Cambiar el nombre del tópico a 'EIASAcolyteInside'
-    const topic = 'EIASAcolyteInside';
-
     // Publicar un mensaje vacío en el tópico MQTT
-    mqttClient.publish(topic, '', (err) => {  // Publicando mensaje vacío
-      if (err) {
-        console.error('Error al publicar en MQTT:', err);
-      } else {
-        console.log('Publicado en MQTT:', topic, 'Mensaje vacío');
-      }
-    });
+    mqttClient.publish('EIASAcolyteInside', `mesage`);
   });
 
   // Desconexión
@@ -575,6 +566,15 @@ mqttClient.on('message', async (topic, message) => {
           await player.save();
           console.log(player.is_inside_tower);
           io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
+          try {
+            const players = await mortimerGet();
+            socket.to(mortimer_socket).emit('all_players', {
+              players: players,
+              from: socket.id,
+            });
+          } catch (error) {
+            socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
+          }
           console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
         } else {
           console.log(`El jugador ${player.name} no tiene un socketId asignado.`);
