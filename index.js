@@ -207,6 +207,8 @@ io.on('connection', async (socket) => {
   // Enviar la lista de jugadores (excluyendo los especificados) al cliente que se acaba de conectar
   try {
     const players = await mortimerGet();
+    const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
+    const mortimer_socket = MORTIMER.socketId;
     socket.to(mortimer_socket).emit('all_players', {
       players: players,
       from: socket.id,
@@ -568,6 +570,8 @@ mqttClient.on('message', async (topic, message) => {
           io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
           try {
             const players = await mortimerGet();
+            const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
+            const mortimer_socket = MORTIMER.socketId;
             socket.to(mortimer_socket).emit('all_players', {
               players: players,
               from: socket.id,
