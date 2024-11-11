@@ -681,9 +681,12 @@ app.post('/send-notification', async (req, res) => {
     }
 
     // Send notification to each token
-    const isInsideTower = await Player.findOne({ name: userAcces[0].isOpen }).select('is_inside_tower');
-
-    if (isInsideTower === true){
+    const isInsideTower = await Player.findOne({ name: userAcces[0]}).select('is_inside_tower');
+    console.log("isopen");
+    console.log(userAcces[0]);
+    console.log("isinside");
+    console.log(isInsideTower.is_inside_tower);
+    if (isInsideTower.is_inside_tower === true){
       await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ Acces granted to", userAcces[0])));
     }
     else{
