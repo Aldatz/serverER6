@@ -1,7 +1,13 @@
 {
+  "name": "eias_server",
+  "version": "1.0.0",
+  "description": "Descripción de tu proyecto",
+  "main": "server.js",
   "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "22": "^0.0.0",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "curl": "^0.1.4",
@@ -9,10 +15,8 @@
     "express": "^4.21.0",
     "firebase-admin": "^12.5.0",
     "google-auth-library": "^9.14.2",
-    "jdk": "^0.0.0",
     "mongoose": "^8.6.3",
     "mqtt": "^5.10.1",
-    "node": "^22.8.0",
     "socket.io": "^4.8.0"
   }
 }
