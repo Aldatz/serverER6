@@ -693,6 +693,7 @@ app.post('/send-notification', async (req, res) => {
       await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ An Acolythe is leaving the tower:", userAcces[0])));
     }
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
+    return;
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Error sending notifications' });
