@@ -681,11 +681,13 @@ app.post('/send-notification', async (req, res) => {
     }
 
     // Send notification to each token
-    if (userAcces[0].isOpen === true){
+    const isInsideTower = await Player.findOne({ name: userAcces[0].isOpen }).select('is_inside_tower');
+
+    if (isInsideTower === true){
       await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ Acces granted to", userAcces[0])));
     }
     else{
-      await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ An Acolythe is leaving the tower", userAcces[0])));
+      await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ An Acolythe is leaving the tower:", userAcces[0])));
     }
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
   } catch (error) {
