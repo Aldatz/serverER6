@@ -569,14 +569,28 @@ mqttClient.on('message', async (topic, message) => {
           console.log(player.is_inside_tower);
           io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
           try {
+            // Obtenemos todos los jugadores
             const players = await mortimerGet();
+            
+            // Buscamos el jugador MORTIMER
             const MORTIMER = await Player.findOne({ email: process.env.MORTIMER_EMAIL });
-            const mortimer_socket = MORTIMER.socketId;
-            socket.to(mortimer_socket).emit('all_players', {
-              players: players,
-              from: socket.id,
-            });
+            const mortimer_socket = MORTIMER?.socketId;
+  
+            console.log('Socket de MORTIMER:', mortimer_socket);
+  
+            // Aseguramos que mortimer_socket es válido antes de emitir
+            if (mortimer_socket) {
+              io.to(mortimer_socket).emit('all_players', {
+                players: players,
+                from: socket.id,
+              });
+              console.log(`Evento 'all_players' emitido a MORTIMER con socketId: ${mortimer_socket}`);
+            } else {
+              console.error('El socketId de MORTIMER no está definido o no es válido.');
+            }
+  
           } catch (error) {
+            console.error('Error al obtener la lista de jugadores o al emitir a MORTIMER:', error);
             socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
           }
           console.log(`Evento 'door_status' emitido solo al jugador: ${player.name} with socket: ${player.socketId}`);
