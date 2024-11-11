@@ -677,11 +677,11 @@ app.post('/send-notification', async (req, res) => {
     }
 
     // Send notification to each token
-    if (userAcces[0] === true){
+    if (userAcces[0].isOpen === true){
       await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ Acces granted to", userAcces[0])));
-    }else{
+    }
+    else{
       await Promise.all(fcmTokens.map(token => sendNotification(token, "!Hey Boss¡ An Acolythe is leaving the tower", userAcces[0])));
-
     }
     res.json({ message: 'Notification sent successfully to all MORTIMERS' });
   } catch (error) {
