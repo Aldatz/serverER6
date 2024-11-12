@@ -46,6 +46,19 @@ export const getUserIsInside = async (email) => {
     throw error;
   }
 };
+export const updateLocation = async (email, location) => {
+    try {
+      const updatedPlayer = await Player.findOneAndUpdate(
+        { email },                   // Filtro para encontrar al jugador por email
+        { $set: { location } },      // Actualizar el campo 'location' con el valor proporcionado
+        { new: true, runValidators: true } // Opciones para devolver el documento actualizado y validar
+      );
+      return updatedPlayer;          // Retornar el jugador actualizado
+    } catch (error) {
+      console.error('Error updating location:', error);
+      throw error;
+    }
+  };
 
 export const updatePlayerByEmail = async (email, updateData) => {
   try {

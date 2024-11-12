@@ -4,7 +4,7 @@ import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { mortimerGet } from './services/playerService.js';
+import { mortimerGet,updateLocation } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { config } from 'dotenv';
 
@@ -127,6 +127,13 @@ io.on('connection', async (socket) => {
     console.log("cerranod puerta");
     mqttClient.publish('EIASAcolyteInside', `mesage`);
     }
+  });
+
+  socket.on('location', (location,email) => {
+    console.log(`location change for ${email} to :${location}`);
+    updateLocation(email,location);
+
+
   });
 
   socket.on('disconnect', () => {

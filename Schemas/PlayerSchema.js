@@ -100,6 +100,7 @@ const playerSchema = new Schema({
   gold: { type: Number},
   attributes: modifierSchema,
   socketId: { type: String },
+  location: { type: String},
   equipment: {
     weapon: equipmentSchema,
     armor: equipmentSchema,
