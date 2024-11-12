@@ -87,7 +87,7 @@ export const setupSocket = (io, mqttClient) => {
               if (mortimer_socket) {
                 io.to(mortimer_socket).emit('all_players', {
                   players: players,
-                  from: socket.id,
+                  from: player.socketId,
                 });
                 console.log(`Evento 'all_players' emitido a MORTIMER con socketId: ${mortimer_socket}`);
               } else {

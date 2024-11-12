@@ -122,11 +122,11 @@ io.on('connection', async (socket) => {
 
   socket.on('is_inside_tower', () => {
     console.log('Se ha recibido un evento is_inside_tower');
-    if (process.env.ENABLE_MQTT === true) {
-        // Publicar un mensaje en el tópico MQTT
-        mqttClient.publish('EIASAcolyteInside', `message`);
+    if (process.env.ENABLE_MQTT === 'true') {
+    // Publicar un mensaje vacío en el tópico MQTT
+    console.log("cerranod puerta");
+    mqttClient.publish('EIASAcolyteInside', `mesage`);
     }
-
   });
 
   socket.on('disconnect', () => {
