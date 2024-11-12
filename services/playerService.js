@@ -48,14 +48,19 @@ export const getUserIsInside = async (email) => {
 };
 export const updateLocation = async (email, location) => {
     try {
-      const updatedPlayer = await Player.findOneAndUpdate(
-        { email },                   // Filtro para encontrar al jugador por email
-        { $set: { location } },      // Actualizar el campo 'location' con el valor proporcionado
-        { new: true, runValidators: true } // Opciones para devolver el documento actualizado y validar
-      );
-      return updatedPlayer;          // Retornar el jugador actualizado
+      // 1. Buscar al jugador por email
+      const player = await Player.findOne({ email });
+  
+      if (!player) {
+        throw new Error('Jugador no encontrado');
+      }
+      // 2. Actualizar el campo 'location'
+      player.location = location;
+      // 3. Guardar los cambios en la base de datos
+      await player.save();
+      return;
     } catch (error) {
-      console.error('Error updating location:', error);
+      console.error('Error al actualizar la ubicación:', error);
       throw error;
     }
   };
