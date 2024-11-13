@@ -36,7 +36,9 @@ export const setupSocket = (io, mqttClient) => {
 
   mqttClient.on('message', async (topic, message) => {
     const messageStr = message.toString().trim();
-
+    if (topic === 'is_inside_tower') {
+        mqttClient.publish('EIASAcolyteInside', `mesage`);
+    }
     if (topic === 'EIASidCard') {
       const receivedCardId = message.toString().trim();
       try {
