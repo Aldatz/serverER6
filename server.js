@@ -139,8 +139,8 @@ io.on('connection', async (socket) => {
   });
   //location data from a device
   socket.on('locationUpdate', (data) => {
-  const { userId, location, avatar } = data;
-  deviceLocations[userId] = {location, avatar}; //save device location by user ID
+  const { userId, coords, avatar } = data;
+  deviceLocations[userId] = {coords, avatar}; //save device location by user ID
 
   //broadcast location to all clients
   io.emit('deviceLocations', deviceLocations);
