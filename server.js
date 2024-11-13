@@ -8,6 +8,8 @@ import { mortimerGet,updateLocation } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { config } from 'dotenv';
 
+let deviceLocations = {};
+
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 
@@ -135,7 +137,14 @@ io.on('connection', async (socket) => {
 
 
   });
+  //location data from a device
+  socket.on('locationUpdate', (data) => {
+  const { userId, location } = data;
+  deviceLocations[userId] = location; //save device location by user ID
 
+  //broadcast location to all clients
+  io.emit('deviceLocations', deviceLocations);
+});
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
   });
