@@ -6,6 +6,7 @@ import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
 import { mortimerGet,updateLocation } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
+import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
 
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
   },
 });
+
 
 io.on('connection', async (socket) => {
   console.log(`Un jugador se ha conectado: ${socket.id}`);
@@ -132,10 +134,32 @@ io.on('connection', async (socket) => {
   socket.on('location', (location,email) => {
     console.log(`location change for ${email} to :${location}`);
     updateLocation(email,location);
-
-
   });
 
+  socket.on('objectTaken', async (data) => {
+    const objectId = data.id;
+    console.log(`Objeto tomado con ID: ${objectId}`);
+
+    try {
+      // Actualizar el campo isTaken en la base de datos
+      const updatedartefact = await Artefact.findOneAndUpdate(
+        { id: objectId },
+        { isTaken: true },
+        { new: true }
+      );
+
+      if (updatedartefact) {
+        console.log(`POI con ID ${objectId} actualizado en MongoDB`);
+
+        // Opcional: Emitir un evento a todos los clientes para actualizar el estado del objeto
+        io.emit('poiUpdated', { id: objectId, isTaken: true });
+      } else {
+        console.log(`No se encontró POI con ID ${objectId}`);
+      }
+    } catch (error) {
+      console.error('Error al actualizar el POI en MongoDB:', error);
+    }
+  });
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
   });
