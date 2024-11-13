@@ -45,7 +45,7 @@ export const setupSocket = (io, mqttClient) => {
   
         if (player) {
           console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
-          if(player.location === 'tower'){  
+          if(player.location === 'Tower'){  
             mqttClient.publish('EIASOpenDoor', `${player.name}`);
           }
           else{
