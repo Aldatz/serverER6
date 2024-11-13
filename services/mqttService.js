@@ -45,12 +45,14 @@ export const setupSocket = (io, mqttClient) => {
   
         if (player) {
           console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
-  
-          // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
-          mqttClient.publish('EIASOpenDoor', `${player.name}`);
+          if(player.location === 'tower'){  
+            mqttClient.publish('EIASOpenDoor', `${player.name}`);
+          }
+          else{
+            mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied, not in the tower');
+          }
         } else {
           console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
-  
           mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied');
         }
       } catch (error) {
