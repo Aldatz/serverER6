@@ -76,12 +76,8 @@ export const setupSocket = (io, mqttClient) => {
             player.is_inside_tower = !player.is_inside_tower;
             await player.save();
             console.log(player.is_inside_tower);
-            if (player.location === 'tower') {
-                io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
-            }
-            else{
-                mqttClient.publish('EIASOpenDoorDenied', 'Access Denied, not in the Tower');
-            }
+            io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
+            
             
             try {
               // Obtenemos todos los jugadores
