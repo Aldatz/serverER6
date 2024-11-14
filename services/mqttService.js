@@ -36,7 +36,9 @@ export const setupSocket = (io, mqttClient) => {
 
   mqttClient.on('message', async (topic, message) => {
     const messageStr = message.toString().trim();
-
+    if (topic === 'is_inside_tower') {
+        mqttClient.publish('EIASAcolyteInside', `mesage`);
+    }
     if (topic === 'EIASidCard') {
       const receivedCardId = message.toString().trim();
       try {
@@ -45,12 +47,14 @@ export const setupSocket = (io, mqttClient) => {
   
         if (player) {
           console.log(`UID recibido coincide con cardId en la base de datos para el jugador: ${player.name}`);
-  
-          // Publicar un mensaje en otro tópico, por ejemplo, 'EIAS/confirm'
-          mqttClient.publish('EIASOpenDoor', `${player.name}`);
+          if(player.location === 'Tower'){  
+            mqttClient.publish('EIASOpenDoor', `${player.name}`);
+          }
+          else{
+            mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied, not in the tower');
+          }
         } else {
           console.log(`UID recibido no coincide con ningún cardId en la base de datos: ${receivedCardId}`);
-  
           mqttClient.publish('EIASOpenDoorDenied', 'Acces Denied');
         }
       } catch (error) {
@@ -72,12 +76,8 @@ export const setupSocket = (io, mqttClient) => {
             player.is_inside_tower = !player.is_inside_tower;
             await player.save();
             console.log(player.is_inside_tower);
-            if (player.location === 'tower') {
-                io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
-            }
-            else{
-                mqttClient.publish('EIASOpenDoorDenied', 'Access Denied, not in the Tower');
-            }
+            io.to(player.socketId).emit('door_status', { isOpen:  player.is_inside_tower});
+            
             
             try {
               // Obtenemos todos los jugadores
