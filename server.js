@@ -155,6 +155,7 @@ io.on('connection', async (socket) => {
 
         // Opcional: Emitir un evento a todos los clientes para actualizar el estado del objeto
         io.emit('poiUpdated', { id: objectId, isTaken: true });
+        io.emit('update_artifacts');
       } else {
         console.log(`No se encontró POI con ID ${objectId}`);
       }
@@ -162,6 +163,27 @@ io.on('connection', async (socket) => {
       console.error('Error al actualizar el POI en MongoDB:', error);
     }
   });
+
+  socket.on('restore_objects', async () => {
+    try {
+      // Actualiza todos los artefactos en la base de datos
+      await Artefact.updateMany({}, { isTaken: false });
+
+      console.log("All objects restored to isTaken: false");
+      io.emit('update_artifacts');
+    } catch (error) {
+      console.error("Error restoring objects:", error);
+    }
+  });
+    // Escuchar el evento de solicitud de artefactos
+    socket.on('request_artifacts', async () => {
+        try {
+          const artifacts = await Artefact.find(); // Obtener todos los artefactos de la base de datos
+          socket.emit('receive_artifacts', artifacts); // Enviar artefactos al cliente
+        } catch (error) {
+          console.error("Error fetching artifacts:", error);
+        }
+      });
     //location data from a device
     socket.on('locationUpdate', (data) => {
         const { userId, coords, avatar } = data;
