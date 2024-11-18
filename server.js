@@ -1,10 +1,9 @@
-// server.js
 import http from 'http';
 import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { mortimerGet,updateLocation } from './services/playerService.js';
+import { mortimerGet, updateLocation } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
@@ -68,7 +67,55 @@ io.on('connection', async (socket) => {
     socket.emit('error', { message: 'Error al obtener el correo del jugador' });
   }
 
-  // Escucha de un evento personalizado para cambiar el estado de un Acolyte
+  
+    // Escuchar el evento 'is_in_hall' para actualizar el estado del jugador
+  socket.on('is_in_hall', async (user) => {
+    console.log(`Nuevo jugador en el hall: ${user.nickname}`);
+
+    // Emitir la información de todos los jugadores a todos los clientes
+    io.emit('players_in_hall', { user, from: socket.id });
+
+    // Opcional: Si quieres que el cliente reciba a todos los jugadores actuales, puedes emitir todos los jugadores al nuevo conectado
+    const players = await Player.find(); // Obtener todos los jugadores
+    socket.emit('players_in_hall', { players: players, from: socket.id });
+  });
+
+
+  // payers dentro del hall
+  socket.on('is_in_hall', async (data) => {
+    const { email } = data;
+  
+    try {
+      // Buscar al usuario en la base de datos
+      const player = await Player.findOne({ email });
+  
+      if (!player) {
+        console.error(`Usuario con email ${email} no encontrado`);
+        socket.emit('error', { message: 'Usuario no encontrado' });
+        return;
+      }
+  
+      // Alternar el valor de isInHall
+      player.isInHall = !player.isInHall;
+  
+      // Guardar los cambios
+      await player.save();
+  
+      // Obtener la lista actualizada de usuarios en el Hall
+      const usersInHall = await Player.find({ isInHall: true }).select('_id nickname avatar');
+  
+      // Emitir la lista actualizada a todos los usuarios conectados
+      io.emit('send_users_in_hall', usersInHall);
+  
+      console.log(`Usuario ${email} actualizado con isInHall: ${player.isInHall}`);
+    } catch (error) {
+      console.error('Error actualizando isInHall:', error);
+      socket.emit('error', { message: 'Error actualizando el estado en el Hall' });
+    }
+  });
+  
+
+  // Escucha otros eventos ya definidos
   socket.on('scan_acolyte', async (data) => {
     const { scannedEmail } = data;
     try {
@@ -127,15 +174,14 @@ io.on('connection', async (socket) => {
   socket.on('is_inside_tower', () => {
     console.log('Se ha recibido un evento is_inside_tower');
     if (process.env.ENABLE_MQTT === 'true') {
-    // Publicar un mensaje vacío en el tópico MQTT
-    console.log("cerranod puerta");
-    mqttClient.publish('EIASAcolyteInside', `mesage`);
+      console.log("cerrando puerta");
+      mqttClient.publish('EIASAcolyteInside', `mesage`);
     }
   });
 
-  socket.on('location', (location,email) => {
+  socket.on('location', (location, email) => {
     console.log(`location change for ${email} to :${location}`);
-    updateLocation(email,location);
+    updateLocation(email, location);
   });
 
   socket.on('objectTaken', async (data) => {
@@ -175,27 +221,31 @@ io.on('connection', async (socket) => {
       console.error("Error restoring objects:", error);
     }
   });
-    // Escuchar el evento de solicitud de artefactos
-    socket.on('request_artifacts', async () => {
-        try {
-          const artifacts = await Artefact.find(); // Obtener todos los artefactos de la base de datos
-          socket.emit('receive_artifacts', artifacts); // Enviar artefactos al cliente
-        } catch (error) {
-          console.error("Error fetching artifacts:", error);
-        }
-      });
-    //location data from a device
-    socket.on('locationUpdate', (data) => {
-        const { userId, coords, avatar } = data;
-        deviceLocations[userId] = {coords, avatar}; //save device location by user ID
-      
-        //broadcast location to all clients
-        io.emit('deviceLocations', deviceLocations);
-      });
+
+  // Escuchar el evento de solicitud de artefactos
+  socket.on('request_artifacts', async () => {
+    try {
+      const artifacts = await Artefact.find(); // Obtener todos los artefactos de la base de datos
+      socket.emit('receive_artifacts', artifacts); // Enviar artefactos al cliente
+    } catch (error) {
+      console.error("Error fetching artifacts:", error);
+    }
+  });
+
+  // Ubicación de los dispositivos
+  socket.on('locationUpdate', (data) => {
+    const { userId, coords, avatar } = data;
+    deviceLocations[userId] = { coords, avatar }; // Guardar ubicación por ID de usuario
+  
+    // Broadcast location to all clients
+    io.emit('deviceLocations', deviceLocations);
+  });
+
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
   });
 });
+
 // Inicializar MQTT si está habilitado
 let mqttClient = null;
 
