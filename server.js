@@ -84,15 +84,6 @@ io.on('connection', async (socket) => {
 
         console.log(`Usuario ${email} actualizado con isInHall: ${player.isInHall}`);
 
-        if (player.role === 'VILLAIN') {
-            // Si el rol es "VILLAIN", se envía a todos los usuarios con rol VILLAIN o MORTIMER
-            const usersInHall = await Player.find({
-                isInHall: true }
-            ).select('_id nickname avatar');
-
-            // Emitir la información solo a los usuarios VILLAIN y MORTIMER
-            io.emit('send_users_in_hall', usersInHall);
-        } else {
             // Si no es "VILLAIN", se buscan los usuarios en el Hall excluyendo a los "VILLAIN"
             const usersInHall = await Player.find({
               isInHall: true, role: { $ne: 'VILLAIN' },
@@ -101,7 +92,7 @@ io.on('connection', async (socket) => {
             // Notificar a todos los usuarios conectados
             io.emit('send_users_in_hall', usersInHall);
         }
-    } catch (error) {
+    catch (error) {
         console.error('Error actualizando isInHall:', error);
         socket.emit('error', { message: 'Error actualizando el estado en el Hall' });
     }
