@@ -3,7 +3,7 @@ import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { mortimerGet, updateLocation } from './services/playerService.js';
+import { deleteMapUser, mortimerGet, updateLocation } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
@@ -239,6 +239,13 @@ io.on('connection', async (socket) => {
   
     // Broadcast location to all clients
     io.emit('deviceLocations', deviceLocations);
+  });
+
+  socket.on('delete_map_user', (nickname) => {
+    console.log(`deleted user ${nickname} from the map`);
+    deviceLocations = deleteMapUser(email, deviceLocations);
+    console.log('Users: ', deviceLocations);
+    io.emit('deviceLocations',deviceLocations);
   });
 
   socket.on('disconnect', () => {
