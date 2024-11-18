@@ -86,7 +86,7 @@ io.on('connection', async (socket) => {
 
             // Si no es "VILLAIN", se buscan los usuarios en el Hall excluyendo a los "VILLAIN"
             const usersInHall = await Player.find({
-              isInHall: true, role: { $ne: 'VILLAIN' },
+              isInHall: true,
             }).select('_id nickname avatar');
 
             // Notificar a todos los usuarios conectados
