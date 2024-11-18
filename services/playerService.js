@@ -85,3 +85,15 @@ export const updatePlayerByEmail = async (email, updateData) => {
     throw error;
   }
 };
+
+export const deleteMapUser = async (nickname, users) => {
+  try {
+    // 1. Buscar al jugador por email
+    const updatedUsers = { ...users };  //clone
+    delete updatedUsers[nickname];  // delte the user by their nickname
+    return updatedUsers;
+  } catch (error) {
+    console.error('error deleteing user from the map:', error);
+    throw error;
+  }
+};
