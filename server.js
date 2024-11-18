@@ -243,7 +243,7 @@ io.on('connection', async (socket) => {
 
   socket.on('delete_map_user', (nickname) => {
     console.log(`deleted user ${nickname} from the map`);
-    deviceLocations = deleteMapUser(email, deviceLocations);
+    deviceLocations = deleteMapUser(nickname, deviceLocations);
     console.log('Users: ', deviceLocations);
     io.emit('deviceLocations',deviceLocations);
   });
