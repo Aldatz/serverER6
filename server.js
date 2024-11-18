@@ -67,53 +67,45 @@ io.on('connection', async (socket) => {
     socket.emit('error', { message: 'Error al obtener el correo del jugador' });
   }
 
-  
-    // Escuchar el evento 'is_in_hall' para actualizar el estado del jugador
-  socket.on('is_in_hall', async (user) => {
-    console.log(`Nuevo jugador en el hall: ${user.nickname}`);
-
-    // Emitir la información de todos los jugadores a todos los clientes
-    io.emit('players_in_hall', { user, from: socket.id });
-
-    // Opcional: Si quieres que el cliente reciba a todos los jugadores actuales, puedes emitir todos los jugadores al nuevo conectado
-    const players = await Player.find(); // Obtener todos los jugadores
-    socket.emit('players_in_hall', { players: players, from: socket.id });
-  });
-
-
-  // payers dentro del hall
   socket.on('is_in_hall', async (data) => {
-    const { email } = data;
-  
+    const { email, isInHall } = data;
+    
     try {
-      // Buscar al usuario en la base de datos
-      const player = await Player.findOne({ email });
-  
-      if (!player) {
-        console.error(`Usuario con email ${email} no encontrado`);
-        socket.emit('error', { message: 'Usuario no encontrado' });
-        return;
-      }
-  
-      // Alternar el valor de isInHall
-      player.isInHall = !player.isInHall;
-  
-      // Guardar los cambios
-      await player.save();
-  
-      // Obtener la lista actualizada de usuarios en el Hall
-      const usersInHall = await Player.find({ isInHall: true }).select('_id nickname avatar');
-  
-      // Emitir la lista actualizada a todos los usuarios conectados
-      io.emit('send_users_in_hall', usersInHall);
-  
-      console.log(`Usuario ${email} actualizado con isInHall: ${player.isInHall}`);
+        const player = await Player.findOne({ email });
+
+        if (!player) {
+            console.error(`Usuario con email ${email} no encontrado`);
+            socket.emit('error', { message: 'Usuario no encontrado' });
+            return;
+        }
+
+        player.isInHall = isInHall;
+        await player.save();
+
+        console.log(`Usuario ${email} actualizado con isInHall: ${player.isInHall}`);
+
+        if (player.role === 'VILLAIN') {
+            // Si el rol es "VILLAIN", se envía a todos los usuarios con rol VILLAIN o MORTIMER
+            const usersInHall = await Player.find({
+                isInHall: true }
+            ).select('_id nickname avatar');
+
+            // Emitir la información solo a los usuarios VILLAIN y MORTIMER
+            io.emit('send_users_in_hall', usersInHall);
+        } else {
+            // Si no es "VILLAIN", se buscan los usuarios en el Hall excluyendo a los "VILLAIN"
+            const usersInHall = await Player.find({
+              isInHall: true, role: { $ne: 'VILLAIN' },
+            }).select('_id nickname avatar');
+
+            // Notificar a todos los usuarios conectados
+            io.emit('send_users_in_hall', usersInHall);
+        }
     } catch (error) {
-      console.error('Error actualizando isInHall:', error);
-      socket.emit('error', { message: 'Error actualizando el estado en el Hall' });
+        console.error('Error actualizando isInHall:', error);
+        socket.emit('error', { message: 'Error actualizando el estado en el Hall' });
     }
-  });
-  
+});
 
   // Escucha otros eventos ya definidos
   socket.on('scan_acolyte', async (data) => {
