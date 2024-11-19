@@ -231,8 +231,8 @@ io.on('connection', async (socket) => {
     io.emit('deviceLocations',deviceLocations);
   });
   socket.on('change_location_tower', (player) => {
-    updateLocation(player.email,'Tower');
-    console.log(`location changed to tower for ${player.name}`);
+    updateLocation(player,'Tower');
+    console.log(`location changed to tower for ${player}`);
 
   });
 
