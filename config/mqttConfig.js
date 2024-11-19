@@ -11,9 +11,8 @@ if (process.env.ENABLE_MQTT === 'true') {
   const options = {
     port: process.env.MQTT_PORT || 8883,
     clientId: 'SERVER_EIAS',
-    ca: fs.readFileSync('certificates/ca.crt'),
-    cert: fs.readFileSync('certificates/server.crt'),
-    key: fs.readFileSync('certificates/eias.key'),
+    username: process.env.MQTT_USER,
+    password: process.env.MQTT_PASSWORD,
     rejectUnauthorized: true,
   };
 
