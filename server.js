@@ -167,6 +167,11 @@ io.on('connection', async (socket) => {
     updateLocation(email, location);
   });
 
+  socket.on('play_animation_acolytes', () => {
+    console.log(`emiting play animation`);
+    socket.emit('play_animation_all_acolytes');
+  });
+
   socket.on('objectTaken', async (data) => {
     const objectId = data.id;
     console.log(`Objeto tomado con ID: ${objectId}`);
