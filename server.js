@@ -167,6 +167,11 @@ io.on('connection', async (socket) => {
     updateLocation(email, location);
   });
 
+  socket.on('play_animation_acolytes', () => {
+    console.log(`emiting play animation`);
+    socket.emit('play_animation_all_acolytes');
+  });
+
   socket.on('objectTaken', async (data) => {
     const objectId = data.id;
     console.log(`Objeto tomado con ID: ${objectId}`);
@@ -230,11 +235,10 @@ io.on('connection', async (socket) => {
     console.log('Users: ', deviceLocations);
     io.emit('deviceLocations',deviceLocations);
   });
-  socket.on('change_location_tower', (player) => {
-    updateLocation(player.email,'Tower');
-    console.log(`location changed to tower for ${player.name}`);
-
-  });
+  // socket.on('change_location_tower', (player) => {
+  //   updateLocation(player,'Tower');
+  //   console.log(`location changed to tower for ${player}`);
+  // });
 
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
