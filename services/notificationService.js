@@ -2,7 +2,7 @@
 import admin from '../config/firebaseConfig.js';
 import { Player } from '../Schemas/PlayerSchema.js';
 
-export const sendNotification = async (fcmToken, title, body) => {
+export const sendNotification = async (fcmToken, title, body, screen) => {
   const message = {
     token: fcmToken,
     notification: {
@@ -11,6 +11,7 @@ export const sendNotification = async (fcmToken, title, body) => {
     },
     data: {
       customDataKey: 'customDataValue',
+      screen: screen,
     },
   };
 

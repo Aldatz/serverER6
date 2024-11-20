@@ -80,7 +80,7 @@ import {
     
       await Promise.all(
         fcmTokens.map((token) =>
-          sendNotification(token, '!Hey Boss¡ The Acolytes are waiting for you in the Hall of Sages')
+          sendNotification(token, '!Hey Boss¡ The Acolytes are waiting for you in the Hall of Sages','','HallOfSages')
         )
       );
       

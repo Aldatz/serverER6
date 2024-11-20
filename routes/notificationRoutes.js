@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.post('/send-notification', sendNotificationToMortimers);
-router.post('/send-notification-obituario', sendObituarioNotificationToMortimers);
+router.get('/send-notification-obituario', sendObituarioNotificationToMortimers);
 router.post('/send-notification-sample', sendNotificationSample);
 
 export default router;
