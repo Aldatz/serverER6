@@ -67,3 +67,25 @@ import {
       res.status(500).json({ error: 'Error sending notification' });
     }
   };
+
+  export const sendObituarioNotificationToMortimers = async (req, res) => {
+    console.log('SENDING OBITUARIO NOTIFICATION TO ALL MORTIMERS');
+  
+    try {
+      const fcmTokens = await searchUsersWithRole('MORTIMER');
+      console.log('FCM tokens found:', fcmTokens);  
+      if (fcmTokens.length === 0) {
+        return res.status(404).json({ error: 'No FCM tokens found for role MORTIMER' });
+      }
+    
+      await Promise.all(
+        fcmTokens.map((token) =>
+          sendNotification(token, '!Hey Boss¡ The Acolytes are waiting for you in the Hall of Sages')
+        )
+      );
+      
+      res.json({ message: 'Notification sent successfully to all MORTIMERS' });
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Error sending notifications' });
+  }};
