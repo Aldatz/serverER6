@@ -116,7 +116,8 @@ const playerSchema = new Schema({
   },
   inventory: inventorySchema,
   profile: profileSchema,
-  tasks: [taskSchema]
+  tasks: [taskSchema],
+  ArtifactsValidated: { type: Boolean},
 });
 
 export const Player = mongoose.model('Player', playerSchema);

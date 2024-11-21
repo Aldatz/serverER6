@@ -3,7 +3,7 @@ import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { deleteMapUser, mortimerGet, updateLocation } from './services/playerService.js';
+import { deleteMapUser, mortimerGet, updateLocation, validateAllArtifacts } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
@@ -170,6 +170,20 @@ io.on('connection', async (socket) => {
   socket.on('play_animation_acolytes', () => {
     console.log(`emiting play animation`);
     io.emit('play_animation_all_acolytes');
+  });
+
+  socket.on('play_animation_mortimer', () => {
+    console.log(`emiting play animation`);
+    io.emit('play_animation_all_mortimers');
+  });
+
+  socket.on('search_validation', (validation) => {
+    console.log(`validation arrived`);
+    io.emit('Validation_acolytes',validation);
+    if (validation === true) {
+    io.emit('updatedPlayer',validation); 
+    validateAllArtifacts();
+    }
   });
 
   socket.on('objectTaken', async (data) => {

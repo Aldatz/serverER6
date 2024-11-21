@@ -1,5 +1,6 @@
 // services/playerService.js
 import { Player } from '../Schemas/PlayerSchema.js';
+import mongoose from '../config/mongooseConfig.js';
 
 export const mortimerGet = async () => {
   try {
@@ -96,4 +97,14 @@ export const deleteMapUser = async (nickname, users) => {
     console.error('error deleteing user from the map:', error);
     throw error;
   }
+};
+
+export const validateAllArtifacts = async () => {
+  try {
+    // Actualizar todos los documentos
+    const result = await Player.updateMany({}, { ArtifactsValidated: true });
+    console.log(`Players updated: ${result.modifiedCount}`);
+  } catch (error) {
+    console.error('Error al actualizar los jugadores:', error);
+  } 
 };
