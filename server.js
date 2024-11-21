@@ -169,7 +169,7 @@ io.on('connection', async (socket) => {
 
   socket.on('play_animation_acolytes', () => {
     console.log(`emiting play animation`);
-    socket.emit('play_animation_all_acolytes');
+    io.emit('play_animation_all_acolytes');
   });
 
   socket.on('objectTaken', async (data) => {
