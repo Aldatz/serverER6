@@ -2,8 +2,6 @@ import mongoose from 'mongoose';
 import { type } from 'os';
 const Schema = mongoose.Schema;
 
-import mongoose, { Schema, Document } from "mongoose";
-
 // Modifiers Schema
 const ModifiersSchema = new Schema({
   intelligence: { type: Number, required: true },
