@@ -2,49 +2,130 @@ import mongoose from 'mongoose';
 import { type } from 'os';
 const Schema = mongoose.Schema;
 
-const modifierSchema = new Schema({
-  intelligence: { type: Number},
-  dexterity: { type: Number},
-  constitution: { type: Number},
-  insanity: { type: Number},
-  charisma: { type: Number},
-  strength: { type: Number},
-  hit_points: { type: Number} 
-}, { _id: false });
+import mongoose, { Schema, Document } from "mongoose";
 
-const equipmentSchema = new Schema({
-  _id: mongoose.Types.ObjectId,
-  name: { type: String},
-  description: { type: String },
-  type: { type: String },
-  image: { type: String },
-  value: { type: Number},
-  min_lvl: { type: Number},
-  damage: { type: String },              
-  base_percentage: { type: Number },      
-  defense: { type: Number },          
-  duration: { type: Number },               
-  modifiers: modifierSchema
-}, { _id: false });
+// Modifiers Schema
+const ModifiersSchema = new Schema({
+  intelligence: { type: Number, required: true },
+  dexterity: { type: Number, required: true },
+  constitution: { type: Number, required: true },
+  insanity: { type: Number, required: true },
+  charisma: { type: Number, required: true },
+  strength: { type: Number, required: true },
+  hit_points: { type: Number, default: 0 }, // Optional, specific to certain items
+});
 
-const recoveryEffectSchema = new Schema({
-  _id: mongoose.Types.ObjectId,
-  name: { type: String},
-  description: { type: String },
-  type: { type: String },
-  modifiers: modifierSchema
-}, { _id: false });
+// Base Equipment Schema
+const BaseEquipmentSchema = new Schema({
+  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  type: { type: String, required: true },
+  image: { type: String, required: true },
+  value: { type: Number, required: true },
+  min_lvl: { type: Number, required: true },
+  modifiers: { type: ModifiersSchema, required: true },
+});
 
-const antidotePotionSchema = new Schema({
-  _id: mongoose.Types.ObjectId,
-  name: { type: String},
-  description: { type: String },
-  type: { type: String },
-  image: { type: String },
-  value: { type: Number},
-  min_lvl: { type: Number},
-  recovery_effect: recoveryEffectSchema
-}, { _id: false });
+// Weapon Schema
+const WeaponSchema = new Schema({
+  base_percentage: { type: Number, required: true },
+  die_faces: { type: Number, required: true },
+  die_modifier: { type: Number, required: true },
+  die_num: { type: Number, required: true },
+  ...BaseEquipmentSchema.obj, // Inherit base equipment fields
+});
+
+// Armor Schema
+const ArmorSchema = new Schema({
+  defense: { type: Number, required: true },
+  isUnique: { type: Boolean, required: true },
+  isActive: { type: Boolean, required: true },
+  ...BaseEquipmentSchema.obj,
+});
+
+// Artifact Schema
+const ArtifactSchema = new Schema({
+  ...BaseEquipmentSchema.obj,
+});
+
+// Recovery Effect Schema (for antidote potions)
+const RecoveryEffectSchema = new Schema({
+  modifiers: { type: ModifiersSchema, required: true },
+  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  type: { type: String, required: true },
+  antidote_effects: { type: [String], required: true },
+  poison_effects: { type: [String], required: true },
+});
+
+// Potion Schema
+const PotionSchema = new Schema({
+  recovery_effect: { type: RecoveryEffectSchema, default: null }, // Optional for certain potions
+  duration: { type: Number, default: null }, // Optional, specific to enhancer potions
+  ...BaseEquipmentSchema.obj,
+});
+
+// Shield Schema
+const ShieldSchema = new Schema({
+  defense: { type: Number, required: true },
+  isUnique: { type: Boolean, required: true },
+  isActive: { type: Boolean, required: true },
+  ...BaseEquipmentSchema.obj,
+});
+
+// Helmet Schema
+const HelmetSchema = new Schema({
+  defense: { type: Number, required: true },
+  isUnique: { type: Boolean, required: true },
+  isActive: { type: Boolean, required: true },
+  ...BaseEquipmentSchema.obj,
+});
+
+// Boot Schema
+const BootSchema = new Schema({
+  defense: { type: Number, required: true },
+  isUnique: { type: Boolean, required: true },
+  isActive: { type: Boolean, required: true },
+  ...BaseEquipmentSchema.obj,
+});
+
+// Ring Schema
+const RingSchema = new Schema({
+  isUnique: { type: Boolean, required: true },
+  isActive: { type: Boolean, required: true },
+  ...BaseEquipmentSchema.obj,
+});
+
+// Main Equipment and Potions Schema
+const EquipmentSchema = new Schema({
+  weapon: { type: WeaponSchema, required: true },
+  armor: { type: ArmorSchema, required: true },
+  artifact: { type: ArtifactSchema, required: true },
+  antidote_potion: { type: PotionSchema, required: true },
+  healing_potion: { type: PotionSchema, required: true },
+  enhancer_potion: { type: PotionSchema, required: true },
+  helmet: { type: HelmetSchema, required: true },
+  shield: { type: ShieldSchema, required: true },
+  boot: { type: BootSchema, required: true },
+  ring: { type: RingSchema, required: true },
+});
+
+// Models
+export const Weapon = mongoose.model("Weapon", WeaponSchema);
+export const Armor = mongoose.model("Armor", ArmorSchema);
+export const Artifact = mongoose.model("Artifact", ArtifactSchema);
+export const Potion = mongoose.model("Potion", PotionSchema);
+export const Helmet = mongoose.model("Helmet", HelmetSchema);
+export const Shield = mongoose.model("Shield", ShieldSchema);
+export const Boot = mongoose.model("Boot", BootSchema);
+export const Ring = mongoose.model("Ring", RingSchema);
+export const Equipment = mongoose.model(
+  "Equipment",
+  EquipmentSchema
+);
+
 
 const profileAttributeSchema = new Schema({
   _id: mongoose.Types.ObjectId,
@@ -70,16 +151,16 @@ const taskSchema = new Schema({
 }, { _id: false });
 
 const inventorySchema = new Schema({
-  helmets: [equipmentSchema],
-  weapons: [equipmentSchema],
-  armors: [equipmentSchema],
-  shields: [equipmentSchema],
-  artifacts: [equipmentSchema],
-  boots: [equipmentSchema],
-  rings: [equipmentSchema],
+  helmets: [HelmetSchema],
+  weapons: [WeaponSchema],
+  armors: [ArmorSchema],
+  shields: [ShieldSchema],
+  artifacts: [ArtifactSchema],
+  boots: [BootSchema],
+  rings: [RingSchema],
   antidote_potions: [antidotePotionSchema],
-  healing_potions: [equipmentSchema],
-  enhancer_potions: [equipmentSchema]
+  healing_potions: [PotionSchema],
+  enhancer_potions: [PotionSchema]
 }, { _id: false });
 
 const playerSchema = new Schema({
@@ -99,25 +180,24 @@ const playerSchema = new Schema({
   avatar: { type: String },
   created_date: { type: Date},
   gold: { type: Number},
-  attributes: modifierSchema,
+  attributes: ModifiersSchema,
   socketId: { type: String },
   location: { type: String},
   equipment: {
-    weapon: equipmentSchema,
-    armor: equipmentSchema,
-    artifact: equipmentSchema,
+    weapon: WeaponSchema,
+    armor: ArmorSchema,
+    artifact: ArtifactSchema,
     antidote_potion: antidotePotionSchema,
-    healing_potion: equipmentSchema,
-    enhancer_potion: equipmentSchema,
-    helmet: equipmentSchema,
-    shield: equipmentSchema,
-    boot: equipmentSchema,
-    ring: equipmentSchema
+    healing_potion: PotionSchema,
+    enhancer_potion: PotionSchema,
+    helmet: HelmetSchema,
+    shield: ShieldSchema,
+    boot: BootSchema,
+    ring: RingSchema
   },
   inventory: inventorySchema,
   profile: profileSchema,
-  tasks: [taskSchema],
-  ArtifactsValidated: { type: Boolean},
+  tasks: [taskSchema]
 });
 
 export const Player = mongoose.model('Player', playerSchema);
