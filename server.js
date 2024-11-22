@@ -203,7 +203,7 @@ io.on('connection', async (socket) => {
 
         // Opcional: Emitir un evento a todos los clientes para actualizar el estado del objeto
         io.emit('poiUpdated', { id: objectId, isTaken: true });
-        io.emit('update_artifacts');
+        io.emit('update_artifacts',updatedartefact);
       } else {
         console.log(`No se encontró POI con ID ${objectId}`);
       }
