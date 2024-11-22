@@ -4,41 +4,41 @@ const Schema = mongoose.Schema;
 
 // Modifiers Schema
 const ModifiersSchema = new Schema({
-  intelligence: { type: Number, required: true },
-  dexterity: { type: Number, required: true },
-  constitution: { type: Number, required: true },
-  insanity: { type: Number, required: true },
-  charisma: { type: Number, required: true },
-  strength: { type: Number, required: true },
+  intelligence: { type: Number },
+  dexterity: { type: Number },
+  constitution: { type: Number },
+  insanity: { type: Number },
+  charisma: { type: Number },
+  strength: { type: Number },
   hit_points: { type: Number, default: 0 }, // Optional, specific to certain items
 });
 
 // Base Equipment Schema
 const BaseEquipmentSchema = new Schema({
-  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  type: { type: String, required: true },
-  image: { type: String, required: true },
-  value: { type: Number, required: true },
-  min_lvl: { type: Number, required: true },
-  modifiers: { type: ModifiersSchema, required: true },
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String },
+  image: { type: String },
+  value: { type: Number },
+  min_lvl: { type: Number },
+  modifiers: { type: ModifiersSchema },
 });
 
 // Weapon Schema
 const WeaponSchema = new Schema({
-  base_percentage: { type: Number, required: true },
-  die_faces: { type: Number, required: true },
-  die_modifier: { type: Number, required: true },
-  die_num: { type: Number, required: true },
+  base_percentage: { type: Number },
+  die_faces: { type: Number },
+  die_modifier: { type: Number },
+  die_num: { type: Number },
   ...BaseEquipmentSchema.obj, // Inherit base equipment fields
 });
 
 // Armor Schema
 const ArmorSchema = new Schema({
-  defense: { type: Number, required: true },
-  isUnique: { type: Boolean, required: true },
-  isActive: { type: Boolean, required: true },
+  defense: { type: Number },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj,
 });
 
@@ -49,13 +49,13 @@ const ArtifactSchema = new Schema({
 
 // Recovery Effect Schema (for antidote potions)
 const RecoveryEffectSchema = new Schema({
-  modifiers: { type: ModifiersSchema, required: true },
-  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  type: { type: String, required: true },
-  antidote_effects: { type: [String], required: true },
-  poison_effects: { type: [String], required: true },
+  modifiers: { type: ModifiersSchema },
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String },
+  antidote_effects: { type: [String] },
+  poison_effects: { type: [String] },
 });
 
 // Potion Schema
@@ -67,72 +67,72 @@ const PotionSchema = new Schema({
 
 // Shield Schema
 const ShieldSchema = new Schema({
-  defense: { type: Number, required: true },
-  isUnique: { type: Boolean, required: true },
-  isActive: { type: Boolean, required: true },
+  defense: { type: Number },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj,
 });
 
 // Helmet Schema
 const HelmetSchema = new Schema({
-  defense: { type: Number, required: true },
-  isUnique: { type: Boolean, required: true },
-  isActive: { type: Boolean, required: true },
+  defense: { type: Number },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj,
 });
 
 // Boot Schema
 const BootSchema = new Schema({
-  defense: { type: Number, required: true },
-  isUnique: { type: Boolean, required: true },
-  isActive: { type: Boolean, required: true },
+  defense: { type: Number },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj,
 });
 
 // Ring Schema
 const RingSchema = new Schema({
-  isUnique: { type: Boolean, required: true },
-  isActive: { type: Boolean, required: true },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj,
 });
 
 // Main Equipment and Potions Schema
 const EquipmentSchema = new Schema({
-  weapon: { type: WeaponSchema, required: true },
-  armor: { type: ArmorSchema, required: true },
-  artifact: { type: ArtifactSchema, required: true },
-  antidote_potion: { type: PotionSchema, required: true },
-  healing_potion: { type: PotionSchema, required: true },
-  enhancer_potion: { type: PotionSchema, required: true },
-  helmet: { type: HelmetSchema, required: true },
-  shield: { type: ShieldSchema, required: true },
-  boot: { type: BootSchema, required: true },
-  ring: { type: RingSchema, required: true },
+  weapon: { type: WeaponSchema },
+  armor: { type: ArmorSchema },
+  artifact: { type: ArtifactSchema },
+  antidote_potion: { type: PotionSchema },
+  healing_potion: { type: PotionSchema },
+  enhancer_potion: { type: PotionSchema },
+  helmet: { type: HelmetSchema },
+  shield: { type: ShieldSchema },
+  boot: { type: BootSchema },
+  ring: { type: RingSchema },
 });
 
 // Enhancer Potion Schema
 const EnhancerPotionSchema = new Schema({
-  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  type: { type: String, enum: ["enhancer"], required: true },
-  image: { type: String, required: true },
-  value: { type: Number, required: true },
-  duration: { type: Number, required: true },
-  min_lvl: { type: Number, required: true },
-  modifiers: { type: ModifiersSchema, required: true },
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String, enum: ["enhancer"] },
+  image: { type: String },
+  value: { type: Number },
+  duration: { type: Number },
+  min_lvl: { type: Number },
+  modifiers: { type: ModifiersSchema },
 });
 
 // Healing Potion Schema
 const HealingPotionSchema = new Schema({
-  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  type: { type: String, enum: ["healing"], required: true },
-  image: { type: String, required: true },
-  value: { type: Number, required: true },
-  min_lvl: { type: Number, required: true },
-  modifiers: { type: ModifiersSchema, required: true },
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String, enum: ["healing"] },
+  image: { type: String },
+  value: { type: Number },
+  min_lvl: { type: Number },
+  modifiers: { type: ModifiersSchema },
 });
 
 // Models
