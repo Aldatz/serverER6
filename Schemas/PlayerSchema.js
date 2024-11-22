@@ -110,6 +110,31 @@ const EquipmentSchema = new Schema({
   ring: { type: RingSchema, required: true },
 });
 
+// Enhancer Potion Schema
+const EnhancerPotionSchema = new Schema({
+  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  type: { type: String, enum: ["enhancer"], required: true },
+  image: { type: String, required: true },
+  value: { type: Number, required: true },
+  duration: { type: Number, required: true },
+  min_lvl: { type: Number, required: true },
+  modifiers: { type: ModifiersSchema, required: true },
+});
+
+// Healing Potion Schema
+const HealingPotionSchema = new Schema({
+  _id: { type: mongoose.Types.ObjectId, required: true, auto: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  type: { type: String, enum: ["healing"], required: true },
+  image: { type: String, required: true },
+  value: { type: Number, required: true },
+  min_lvl: { type: Number, required: true },
+  modifiers: { type: ModifiersSchema, required: true },
+});
+
 // Models
 export const Weapon = mongoose.model("Weapon", WeaponSchema);
 export const Armor = mongoose.model("Armor", ArmorSchema);
@@ -119,6 +144,8 @@ export const Helmet = mongoose.model("Helmet", HelmetSchema);
 export const Shield = mongoose.model("Shield", ShieldSchema);
 export const Boot = mongoose.model("Boot", BootSchema);
 export const Ring = mongoose.model("Ring", RingSchema);
+export const HealingPotion = mongoose.model("HealingPotion", HealingPotionSchema);
+export const EnhancerPotion = mongoose.model("EnhancerPotion", EnhancerPotionSchema);
 export const Equipment = mongoose.model(
   "Equipment",
   EquipmentSchema
@@ -156,9 +183,9 @@ const inventorySchema = new Schema({
   artifacts: [ArtifactSchema],
   boots: [BootSchema],
   rings: [RingSchema],
-  antidote_potions: [antidotePotionSchema],
-  healing_potions: [PotionSchema],
-  enhancer_potions: [PotionSchema]
+  antidote_potions: [PotionSchema],
+  healing_potions: [HealingPotionSchema],
+  enhancer_potions: [EnhancerPotionSchema]
 }, { _id: false });
 
 const playerSchema = new Schema({
@@ -185,9 +212,9 @@ const playerSchema = new Schema({
     weapon: WeaponSchema,
     armor: ArmorSchema,
     artifact: ArtifactSchema,
-    antidote_potion: antidotePotionSchema,
-    healing_potion: PotionSchema,
-    enhancer_potion: PotionSchema,
+    antidote_potion: PotionSchema,
+    healing_potion: HealingPotionSchema,
+    enhancer_potion: EnhancerPotionSchema,
     helmet: HelmetSchema,
     shield: ShieldSchema,
     boot: BootSchema,
