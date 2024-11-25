@@ -31,6 +31,8 @@ const WeaponSchema = new Schema({
   die_faces: { type: Number },
   die_modifier: { type: Number },
   die_num: { type: Number },
+  isUnique: { type: Boolean },
+  isActive: { type: Boolean },
   ...BaseEquipmentSchema.obj, // Inherit base equipment fields
 });
 
