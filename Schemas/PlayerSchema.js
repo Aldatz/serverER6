@@ -24,6 +24,30 @@ const BaseEquipmentSchema = new Schema({
   min_lvl: { type: Number },
   modifiers: { type: ModifiersSchema },
 });
+// Enhancer Potion Schema
+const EnhancerPotionSchema = new Schema({
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String, enum: ["enhancer", "elixir"] },
+  image: { type: String },
+  value: { type: Number },
+  duration: { type: Number },
+  min_lvl: { type: Number },
+  modifiers: { type: ModifiersSchema },
+});
+
+// Healing Potion Schema
+const HealingPotionSchema = new Schema({
+  _id: { type: mongoose.Types.ObjectId, auto: true },
+  name: { type: String },
+  description: { type: String },
+  type: { type: String, enum: ["healing","essence"] },
+  image: { type: String },
+  value: { type: Number },
+  min_lvl: { type: Number },
+  modifiers: { type: ModifiersSchema },
+});
 
 // Weapon Schema
 const WeaponSchema = new Schema({
@@ -104,37 +128,12 @@ const EquipmentSchema = new Schema({
   armor: { type: ArmorSchema },
   artifact: { type: ArtifactSchema },
   antidote_potion: { type: PotionSchema },
-  healing_potion: { type: PotionSchema },
-  enhancer_potion: { type: PotionSchema },
+  healing_potion: { type: HealingPotionSchema },
+  enhancer_potion: { type: EnhancerPotionSchema },
   helmet: { type: HelmetSchema },
   shield: { type: ShieldSchema },
   boot: { type: BootSchema },
   ring: { type: RingSchema },
-});
-
-// Enhancer Potion Schema
-const EnhancerPotionSchema = new Schema({
-  _id: { type: mongoose.Types.ObjectId, auto: true },
-  name: { type: String },
-  description: { type: String },
-  type: { type: String, enum: ["enhancer"] },
-  image: { type: String },
-  value: { type: Number },
-  duration: { type: Number },
-  min_lvl: { type: Number },
-  modifiers: { type: ModifiersSchema },
-});
-
-// Healing Potion Schema
-const HealingPotionSchema = new Schema({
-  _id: { type: mongoose.Types.ObjectId, auto: true },
-  name: { type: String },
-  description: { type: String },
-  type: { type: String, enum: ["healing"] },
-  image: { type: String },
-  value: { type: Number },
-  min_lvl: { type: Number },
-  modifiers: { type: ModifiersSchema },
 });
 
 // Models
