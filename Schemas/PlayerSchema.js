@@ -223,7 +223,13 @@ const playerSchema = new Schema({
   },
   inventory: inventorySchema,
   profile: profileSchema,
-  tasks: [taskSchema]
+  tasks: [taskSchema],
+  isbetrayer: {
+    type: Boolean,
+    default: null,
+  },
+  AngeloReduced: {type: Boolean},
+  AngeloDelivered: {type: Boolean}
 });
 
 export const Player = mongoose.model('Player', playerSchema);

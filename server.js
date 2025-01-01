@@ -3,12 +3,18 @@ import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { deleteMapUser, mortimerGet, updateLocation, validateAllArtifacts } from './services/playerService.js';
+import { AngeloDelivered, AngeloREduced, deleteMapUser, mortimerGet, updateLocation, validateAllArtifacts } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
+import { setBetrayer } from './services/playerService.js';
 
 let deviceLocations = {};
+let fightState = {
+  inProgress: false,
+  acolytePower: 0,
+  angeloPower: 100,
+};
 
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
@@ -167,6 +173,16 @@ io.on('connection', async (socket) => {
     updateLocation(email, location);
   });
 
+  socket.on('Betrayer', (decision,email) => {
+    console.log(`Decision taken for ${email} Decision:${decision}`);
+    setBetrayer(email,decision);
+  });
+  socket.on('AngeloFound', () => {
+    console.log(`AngeloWasFound`);
+    io.emit('AngeloWasFound');
+    
+  });
+
   socket.on('play_animation_acolytes', () => {
     console.log(`emiting play animation`);
     io.emit('play_animation_all_acolytes');
@@ -254,6 +270,80 @@ io.on('connection', async (socket) => {
   //   console.log(`location changed to tower for ${player}`);
   // });
 
+
+  // -- ESTADO COMPARTIDO --
+let progress = 50;           // Barra de 0 a 100
+let inProgress = false;      // Bandera de "batalla en curso"
+let pushInterval = null;     // Intervalo para que Angelo empuje
+
+// -- FUNCIONES DE BARRA --
+function startBattle() {
+  if (inProgress) return;    // Evitar dos batallas simultáneas
+  inProgress = true;
+  progress = 50;             // Empezamos a la mitad
+
+  // Emitir a todos que la batalla inicia (y la barra actual)
+  io.emit('battle_started', { progress });
+
+  // Crear un intervalo que cada X ms sube la barra en 1
+  pushInterval = setInterval(() => {
+    progress += 5;
+    if (progress > 100) {
+      progress = 100;
+      endBattle('AngeloWins');
+    } else {
+      io.emit('battle_update', { progress });
+    }
+  }, 200); // 500 ms, ajústalo a tu gusto
+}
+
+function reduceAngelo(value) {
+  // Bajar la barra
+  progress -= value;
+  if (progress < 0) {
+    progress = 0;
+    endBattle('AcolytesWin');
+  } else {
+    io.emit('battle_update', { progress });
+  }
+}
+
+async function endBattle(result) {
+  if (pushInterval) {
+    clearInterval(pushInterval);
+    pushInterval = null;
+  }
+  inProgress = false;
+
+  try {
+    await AngeloREduced(); 
+  } catch (error) {
+    console.error('Error en AngeloReduced:', error);
+  }
+
+  io.emit('battle_end', { result, progress });
+}
+
+socket.on('Angelo_delivered', () => {
+    AngeloDelivered();
+});
+
+// Un cliente solicita iniciar batalla
+socket.on('start_angelo_battle', () => {
+  startBattle();
+});
+
+// Reducir la barra (tap)
+socket.on('reduce_angelo', (data) => {
+  if (!inProgress) return;
+  const value = data?.value || 5;
+  reduceAngelo(value);
+});
+
+// (Opcional) Cancelar batalla, etc.
+socket.on('cancel_battle', () => {
+  endBattle('Cancelled');
+});
   socket.on('disconnect', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
   });

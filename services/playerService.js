@@ -65,6 +65,24 @@ export const updateLocation = async (email, location) => {
       throw error;
     }
   };
+  export const setBetrayer = async (email, decision) => {
+    try {
+      // 1. Buscar al jugador por email
+      const player = await Player.findOne({ email });
+  
+      if (!player) {
+        throw new Error('Jugador no encontrado');
+      }
+      // 2. Actualizar el campo 'location'
+      player.isbetrayer = decision;
+      // 3. Guardar los cambios en la base de datos
+      await player.save();
+      return;
+    } catch (error) {
+      console.error('Error al actualizar isbetrayer:', error);
+      throw error;
+    }
+  };
 
 export const updatePlayerByEmail = async (email, updateData) => {
   try {
@@ -104,6 +122,26 @@ export const validateAllArtifacts = async () => {
     // Actualizar todos los documentos
     const result = await Player.updateMany({}, { ArtifactsValidated: true });
     console.log(`Players updated: ${result.modifiedCount}`);
+  } catch (error) {
+    console.error('Error al actualizar los jugadores:', error);
+  } 
+};
+
+export const AngeloREduced = async () => {
+  try {
+    // Actualizar todos los documentos
+    const result = await Player.updateMany({}, { AngeloReduced: true });
+    console.log(`Player updated Angelo Reduced: ${result.modifiedCount}`);
+  } catch (error) {
+    console.error('Error al actualizar los jugadores:', error);
+  } 
+};
+
+export const AngeloDelivered = async () => {
+  try {
+    // Actualizar todos los documentos
+    const result = await Player.updateMany({}, { AngeloDelivered: true });
+    console.log(`Player updated Angelo Delivered: ${result.modifiedCount}`);
   } catch (error) {
     console.error('Error al actualizar los jugadores:', error);
   } 
