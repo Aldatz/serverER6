@@ -18,6 +18,8 @@ export const mortimerGet = async () => {
         nickname: 1,
         avatar: 1,
         is_inside_tower: 1,
+        disease: 1,
+        ethaziumCursed: 1,
       }
     );
 
