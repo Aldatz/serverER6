@@ -8,6 +8,7 @@ import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
 import { setBetrayer } from './services/playerService.js';
+import { scheduleCronJobs } from './cron/cronJobs.js';
 
 let deviceLocations = {};
 let fightState = {
@@ -26,6 +27,7 @@ const io = new Server(server, {
   },
 });
 
+scheduleCronJobs();
 
 io.on('connection', async (socket) => {
   console.log(`Un jugador se ha conectado: ${socket.id}`);

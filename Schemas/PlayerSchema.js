@@ -229,7 +229,30 @@ const playerSchema = new Schema({
     default: null,
   },
   AngeloReduced: {type: Boolean},
-  AngeloDelivered: {type: Boolean}
+  AngeloDelivered: {type: Boolean},
+  resistance: {
+    type: Number,
+    default: 100, // Empezar en 100% si lo deseas
+  },
+  disease: {
+    type: String,
+    enum: [
+      'PUTRID PLAGUE',      // Intelligence -75%
+      'EPIC WEAKNESS',      // Strength -60%
+      'MEDULAR APOCALYPSE', // Constitution -30%
+      null
+    ],
+    default: null,
+  },
+  ethaziumCursed: {
+    type: Boolean,
+    default: false,
+  },
+  appLockedReason: {
+    type: String,
+    enum: ['DISEASE', 'ETHAZIUM_CURSE', null],
+    default: null,
+  },
 });
 
 export const Player = mongoose.model('Player', playerSchema);
