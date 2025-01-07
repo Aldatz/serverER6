@@ -33,8 +33,8 @@ export async function reduceResistance() {
       // 3) Guardar
       await p.save();
     }
-    console.log('Resistencia reducida un 10% a todos los jugadores (no traidores).');
+    console.log('Resistance reduced by 10% to all players (non-traitors).');
   } catch (err) {
-    console.error('Error en reduceResistance:', err);
+    console.error('Error reducing resistance:', err);
   }
 }
