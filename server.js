@@ -272,6 +272,65 @@ io.on('connection', async (socket) => {
   //   console.log(`location changed to tower for ${player}`);
   // });
 
+  socket.on('player_update_curse_disease', async (payload) => {
+    try {
+      const { playerId, diseases, ethaziumCursed } = payload;
+      console.log('player_update_curse_disease:', payload);
+
+      // 1) Buscar al jugador
+      const player = await Player.findById(playerId);
+      if (!player) {
+        console.log('Jugador no encontrado con _id:', playerId);
+        return;
+      }
+
+      // 2) Actualizar enfermedad
+      // Si solo manejas una enfermedad a la vez,
+      // tomas la primera de "diseases" o pones null si no hay ninguna
+      const newDisease = diseases && diseases.length > 0 ? diseases[0] : null;
+      
+      // Si no está en la base, lo definimos:
+      // playerSchema define: disease: { type: String, enum: [...], default: null }
+      player.disease = newDisease; 
+
+      // 3) Actualizar maldición Ethazium
+      // playerSchema define: ethaziumCursed: { type: Boolean, default: false }
+      player.ethaziumCursed = ethaziumCursed;
+
+      // 4) Guardar cambios
+      await player.save();
+      console.log(`Jugador ${player.nickname} actualizado: disease=${player.disease}, ethaziumCursed=${player.ethaziumCursed}`);
+
+      // 5) Emitir eventos para que todos (o el propio jugador) se enteren y reactualicen en local
+
+      // Caso: enfermedad
+      if (newDisease) {
+        // Se aplicó una enfermedad
+        io.emit('applied_disease', {
+          playerId,
+          disease: newDisease,
+          applied: true,
+        });
+      } else {
+        // No hay disease => se retiró
+        io.emit('applied_disease', {
+          playerId,
+          disease: '', // o la anterior si la necesitas
+          applied: false,
+        });
+      }
+
+      // Caso: maldición Ethazium
+      io.emit('applied_curse', {
+        playerId,
+        curse: ethaziumCursed,
+      });
+
+    } catch (err) {
+      console.error('Error en player_update_curse_disease:', err);
+    }
+  });
+
 
   // -- ESTADO COMPARTIDO --
 let progress = 50;           // Barra de 0 a 100
