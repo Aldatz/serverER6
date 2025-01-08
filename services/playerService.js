@@ -154,29 +154,19 @@ export const giveAllIngredients = async (email) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
     const response = await axios.get(url);
-    
-    if (response.data && response.data.data) {
-      res.json({
-        success: true,
-        ingredientsData: response.data.data,
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'No ingredients found',
-      });
-    }
 
     // 1. Buscar al jugador por email
     const player = await Player.findOne({ email });
-    const newIngredients = res.ingredientsData
+
+    const newIngredients = response.data.data;
     if (!player) {
       throw new Error('Jugador no encontrado');
     }
     // 2. Actualizar el campo 'location'
-    player.ingredients = newIngredients;
+    player.inventory.ingredients = newIngredients;
     // 3. Guardar los cambios en la base de datos
     await player.save();
+    console.log("Ingredients added to ",email);
     return;
   } catch (error) {
     console.error('Error al actualizar isbetrayer:', error);
