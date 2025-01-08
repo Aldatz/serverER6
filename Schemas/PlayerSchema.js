@@ -176,6 +176,16 @@ const taskSchema = new Schema({
   _id: mongoose.Types.ObjectId
 }, { _id: false });
 
+const ingredientSchema = new Schema({
+  _id: { type: String },
+  description: { type: String },
+  effects: { type: [String] },
+  image: { type: String },
+  name: { type: String },
+  type: { type: String },
+  value: { type: Number }
+});
+
 const inventorySchema = new Schema({
   helmets: [HelmetSchema],
   weapons: [WeaponSchema],
@@ -186,7 +196,8 @@ const inventorySchema = new Schema({
   rings: [RingSchema],
   antidote_potions: [PotionSchema],
   healing_potions: [HealingPotionSchema],
-  enhancer_potions: [EnhancerPotionSchema]
+  enhancer_potions: [EnhancerPotionSchema],
+  ingredients: [ingredientSchema]
 }, { _id: false });
 
 const playerSchema = new Schema({
