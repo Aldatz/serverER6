@@ -144,6 +144,7 @@ export const AngeloDelivered = async () => {
     // Actualizar todos los documentos
     const result = await Player.updateMany({}, { AngeloDelivered: true });
     console.log(`Player updated Angelo Delivered: ${result.modifiedCount}`);
+    io.emit('AngeloDeliveredSuccesfullly');
   } catch (error) {
     console.error('Error al actualizar los jugadores:', error);
   } 

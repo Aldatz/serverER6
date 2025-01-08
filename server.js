@@ -306,14 +306,14 @@ io.on('connection', async (socket) => {
       // Caso: enfermedad
       if (newDisease) {
         // Se aplicó una enfermedad
-        io.emit('applied_disease', {
+        socket.to(player.socketId).emit('applied_disease', {
           playerId,
           disease: newDisease,
           applied: true,
         });
       } else {
         // No hay disease => se retiró
-        io.emit('applied_disease', {
+        socket.to(player.socketId).emit('applied_disease', {
           playerId,
           disease: '', // o la anterior si la necesitas
           applied: false,
@@ -321,7 +321,7 @@ io.on('connection', async (socket) => {
       }
 
       // Caso: maldición Ethazium
-      io.emit('applied_curse', {
+      socket.to(player.socketId).emit('applied_curse', {
         playerId,
         curse: ethaziumCursed,
       });
