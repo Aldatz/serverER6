@@ -163,7 +163,7 @@ export const giveAllIngredients = async (email) => {
       throw new Error('Jugador no encontrado');
     }
     // 2. Actualizar el campo 'location'
-    player.inventory.ingredients = newIngredients;
+    player.inventory.ingredients = [...player.inventory.ingredients, ...newIngredients];
     // 3. Guardar los cambios en la base de datos
     await player.save();
     console.log("Ingredients added to ",email);
