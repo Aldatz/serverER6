@@ -407,12 +407,15 @@ app.post('/verify-token', async (req, res) => {
     // Obtener los datos del jugador desde la API
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
+    const oldPlayer = await Player.findOne({ email });
+
     const playerData = await insertPlayer(response.data);
 
     // Asignar socketId al jugador en la base de datos
     const player = await Player.findOne({ email });
     if (player) {
       player.socketId = socketId; // Asignamos el socketId recibido
+      player.inventory.ingredients = oldPlayer.inventory.ingredients // mantenemos los ingredientes antiguos
       player.fcmToken = fcmToken;
       await player.save();        // Guardamos los cambios en la base de datos
       console.log(`Socket ID ${socketId} asignado al jugador con email: ${email}`);
