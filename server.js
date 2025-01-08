@@ -387,6 +387,7 @@ async function endBattle(result) {
 
 socket.on('Angelo_delivered', () => {
     AngeloDelivered();
+    io.emit('AngeloDeliveredSuccesfullly');
 });
 
 // Un cliente solicita iniciar batalla
