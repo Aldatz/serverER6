@@ -386,10 +386,23 @@ async function endBattle(result) {
 }
 
 socket.on('Angelo_delivered', () => {
-    AngeloDelivered();
-    io.emit('AngeloDeliveredSuccesfullly');
+    
+    io.emit('Validate_angelo');
+    //io.emit('AngeloDeliveredSuccesfully');
 });
 
+  // Servidor escucha la respuesta del cliente
+  socket.on('Validate_angelo_response', (payload) => {
+    console.log('Respuesta a Validate_angelo:', payload);
+    if(payload.validated){
+      AngeloDelivered();
+      io.emit('AngeloDeliveredSuccesfully');
+    }
+    else{
+      io.emit('AngeloDeliveredFailed');
+    }
+
+  });
 // Un cliente solicita iniciar batalla
 socket.on('start_angelo_battle', () => {
   startBattle();
