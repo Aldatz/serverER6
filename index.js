@@ -414,7 +414,6 @@ app.post('/verify-token', async (req, res) => {
     const player = await Player.findOne({ email });
     if (player) {  
       player.socketId = socketId; // Asignamos el socketId recibido
-      player.inventory.ingredients = oldPlayer.inventory.ingredients // mantenemos los ingredientes antiguos
       player.fcmToken = fcmToken;
       await player.save();        // Guardamos los cambios en la base de datos
       console.log(`Socket ID ${socketId} asignado al jugador con email: ${email}`);
@@ -449,7 +448,7 @@ async function insertPlayer(playerData) {
       const data = playerData.data;
       const existingPlayer = await Player.findOne({ email: data.email });
 
-      console.log(existingPlayer.inventory);
+      console.log(existingPlayer);
       
       if (existingPlayer) {
           // Actualiza los campos necesarios sin cambiar el estado de is_active
