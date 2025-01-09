@@ -18,7 +18,7 @@ export async function reduceResistance() {
       // 1) Reducir 10%
       //    p.ej. p.resistance = p.resistance - 10 sería un -10 fijo,
       //    aquí hacemos multiplicar * 0.9 (10% menos).
-      p.resistance = p.resistance * 0.90;
+      p.resistance = p.resistance - 10;
 
       // 2) Si resistencia < 50 → sube "insanity" en 'attributes'
       if (p.resistance < 50) {
