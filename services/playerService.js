@@ -158,18 +158,29 @@ export const giveAllIngredients = async (email) => {
     // 1. Buscar al jugador por email
     const player = await Player.findOne({ email });
 
-    const newIngredients = response.data.data;
     if (!player) {
       throw new Error('Jugador no encontrado');
     }
-    // 2. Actualizar el campo 'location'
-    player.inventory.ingredients = [...player.inventory.ingredients, ...newIngredients];
+
+    // add qty
+    const newIngredients = response.data.data.map(ingredient => ({
+      ...ingredient,
+      qty: 2, // Add default quantity
+    }));
+
+    // merge
+    player.inventory.ingredients = [
+      ...player.inventory.ingredients,
+      ...newIngredients,
+    ];
+
     // 3. Guardar los cambios en la base de datos
     await player.save();
-    console.log("Ingredients added to ",email);
+    console.log("Ingredients added to", email);
     return;
   } catch (error) {
     console.error('Error al actualizar isbetrayer:', error);
     throw error;
   }
 };
+
