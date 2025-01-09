@@ -409,18 +409,10 @@ app.post('/verify-token', async (req, res) => {
     const response = await axios.get(url);
     const oldPlayer = await Player.findOne({ email });
 
-    const playerData = await insertPlayer(response.data);
 
     // Asignar socketId al jugador en la base de datos
     const player = await Player.findOne({ email });
     if (player) {
-      console.log("OLDPLAYEER");
-      
-      console.log(oldPlayer.inventory.ingredients);
-      console.log("NEWPLAYER");
-      
-      console.log(player.inventory.ingredients);
-
       
       player.socketId = socketId; // Asignamos el socketId recibido
       player.inventory.ingredients = oldPlayer.inventory.ingredients // mantenemos los ingredientes antiguos
@@ -430,6 +422,8 @@ app.post('/verify-token', async (req, res) => {
       console.log(`FCM Token: ${fcmToken} asignado al jugador con email: ${email}`);
 
     }
+
+    const playerData = await insertPlayer(player);
 
     // Responder con los datos
     res.json({
