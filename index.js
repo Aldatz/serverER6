@@ -414,6 +414,14 @@ app.post('/verify-token', async (req, res) => {
     // Asignar socketId al jugador en la base de datos
     const player = await Player.findOne({ email });
     if (player) {
+      console.log("OLDPLAYEER");
+      
+      console.log(oldPlayer.inventory.ingredients);
+      console.log("NEWPLAYER");
+      
+      console.log(player.inventory.ingredients);
+
+      
       player.socketId = socketId; // Asignamos el socketId recibido
       player.inventory.ingredients = oldPlayer.inventory.ingredients // mantenemos los ingredientes antiguos
       player.fcmToken = fcmToken;
