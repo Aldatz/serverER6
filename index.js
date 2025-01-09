@@ -449,6 +449,8 @@ async function insertPlayer(playerData) {
       const data = playerData.data;
       const existingPlayer = await Player.findOne({ email: data.email });
 
+      console.log(existingPlayer.inventory);
+      
       if (existingPlayer) {
           // Actualiza los campos necesarios sin cambiar el estado de is_active
           await Player.updateOne(
@@ -457,7 +459,7 @@ async function insertPlayer(playerData) {
               ...data,
               is_active: existingPlayer.is_active, // Manten el estado existente
               is_inside_tower: existingPlayer.is_inside_tower,
-              "playerData.inventory.ingredients": existingPlayer.playerData.inventory.ingredients, //manten ingredientes
+              "inventory.ingredients": existingPlayer.inventory.ingredients, //manten ingredientes
             }
           );
           console.log(`Player with email ${data.email} updated successfully.`);
