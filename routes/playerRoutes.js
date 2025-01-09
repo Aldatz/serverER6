@@ -23,7 +23,7 @@ router.get('/giveIngredients/:email', async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-app.put('/update', async (req, res) => {
+router.put('/update', async (req, res) => {
   try {
       const { email, playerData } = req.body;
       const updatedPlayer = await Player.findOneAndUpdate(
