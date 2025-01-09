@@ -23,6 +23,23 @@ router.get('/giveIngredients/:email', async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
+app.put('/update', async (req, res) => {
+  try {
+      const { email, playerData } = req.body;
+      const updatedPlayer = await Player.findOneAndUpdate(
+          { email },
+          { playerData },
+          { new: true }
+      );
+      if (!updatedPlayer) {
+          return res.status(404).json({ success: false, message: 'Player not found' });
+      }
+      res.json({ success: true, player: updatedPlayer });
+  } catch (error) {
+      console.error('Error updating player:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
 
 
 export default router;
