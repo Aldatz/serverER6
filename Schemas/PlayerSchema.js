@@ -183,7 +183,9 @@ const ingredientSchema = new Schema({
   image: { type: String },
   name: { type: String },
   type: { type: String },
-  value: { type: Number }
+  value: { type: Number },
+  qty: { type: Number }
+
 });
 
 const inventorySchema = new Schema({
