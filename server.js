@@ -401,8 +401,38 @@ socket.on('Angelo_delivered', () => {
     else{
       io.emit('AngeloDeliveredFailed');
     }
-
   });
+
+  socket.on('rest_request', async (payload) => {
+    try {
+      console.log('Rest request:', payload);
+      const { email } = payload;
+
+      // 1) Buscar al jugador por email
+      const player = await Player.findOne({ email });
+      if (!player) {
+        console.log('Player not found by email:', email);
+        return;
+      } else {
+        console.log('Player found:', player.name);
+      }
+
+      // 2) Actualizar su resistencia
+      player.resistance = 100;
+      await player.save();
+
+      console.log(`Player ${player.email} now has resistance=100`);
+
+      // 3) Emitir un evento de "rest_applied" si deseas notificar al cliente
+      socket.to(player.socketId).emit('rest_applied', {
+        email,
+        newResistance: 100,
+      });
+    } catch (err) {
+      console.error('Error en rest_request:', err);
+    }
+  });
+
 // Un cliente solicita iniciar batalla
 socket.on('start_angelo_battle', () => {
   startBattle();
