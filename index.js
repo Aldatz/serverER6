@@ -407,13 +407,12 @@ app.post('/verify-token', async (req, res) => {
     // Obtener los datos del jugador desde la API
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
     const response = await axios.get(url);
-    const oldPlayer = await Player.findOne({ email });
 
+    const playerData = await insertPlayer(response.data);
 
     // Asignar socketId al jugador en la base de datos
     const player = await Player.findOne({ email });
-    if (player) {
-      
+    if (player) {  
       player.socketId = socketId; // Asignamos el socketId recibido
       player.inventory.ingredients = oldPlayer.inventory.ingredients // mantenemos los ingredientes antiguos
       player.fcmToken = fcmToken;
@@ -422,8 +421,6 @@ app.post('/verify-token', async (req, res) => {
       console.log(`FCM Token: ${fcmToken} asignado al jugador con email: ${email}`);
 
     }
-
-    const playerData = await insertPlayer(player);
 
     // Responder con los datos
     res.json({
@@ -454,11 +451,15 @@ async function insertPlayer(playerData) {
 
       if (existingPlayer) {
           // Actualiza los campos necesarios sin cambiar el estado de is_active
-          await Player.updateOne({ email: data.email }, {
+          await Player.updateOne(
+            { email: data.email },
+            {
               ...data,
-              is_active: existingPlayer.is_active, // Mantén el estado existente
+              is_active: existingPlayer.is_active, // Manten el estado existente
               is_inside_tower: existingPlayer.is_inside_tower,
-          });
+              "playerData.inventory.ingredients": existingPlayer.playerData.inventory.ingredients, //manten ingredientes
+            }
+          );
           console.log(`Player with email ${data.email} updated successfully.`);
           return existingPlayer;
       } else {
