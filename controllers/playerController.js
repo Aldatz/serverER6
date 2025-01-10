@@ -25,6 +25,22 @@ import { Player } from '../Schemas/PlayerSchema.js';
     }
   }
 
+  export const applyCurse = async (req, res) => {
+    try {
+      const { email, curse } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+      console.log('applying curse',email,' to player ', email);
+
+      const response = await applyCurseToPlayer(email,curse);
+      res.json(response);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Error fetching data' });
+    }
+  };
+
   export const isInsideTower = async (req, res) => {
     try {
       const { email } = req.body;

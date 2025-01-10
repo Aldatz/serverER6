@@ -72,6 +72,58 @@ export const getUserIsInsideTower = async (email) => {
   }
 };
 
+export const applyCurseToPlayer = async (email, curseName) => {
+  const searchCurses = async () => {
+    try {
+      const url = `https://kaotika-server.fly.dev/diseases`;
+      const response = await axios.get(url);
+
+      if (response.data && response.data.data) {
+        return response.data.data; // Return the array of diseases
+      } else {
+        throw new Error('No curses found in API response');
+      }
+    } catch (error) {
+      console.error('Error fetching curses:', error.message);
+      throw new Error('Failed to fetch curses');
+    }
+  };
+
+  try {
+    //take player from db
+    const player = await Player.findOne({ email });
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    //fetch diseases from api
+    const curses = await searchCurses();
+
+    //find teh curse
+    const selectedCurse = curses.find((curse) => curse.name === curseName);
+    if (!selectedCurse) {
+      throw new Error(`Curse with name "${curseName}" not found`);
+    }
+
+    //apply curse
+    player.curse.push(selectedCurse);
+
+    await player.save();
+
+    return {
+      success: true,
+      message: `Curse "${curseName}" successfully applied to player`,
+      player,
+    };
+  } catch (error) {
+    console.error('Error applying curse to player:', error.message);
+    throw {
+      success: false,
+      message: error.message || 'Failed to apply curse',
+    };
+  }
+};
+
 export const getUserIsInside = async (email) => {
   try {
     const isInside = await Player.findOne({ email }).select('is_active');

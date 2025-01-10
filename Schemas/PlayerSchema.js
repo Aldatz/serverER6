@@ -202,6 +202,21 @@ const inventorySchema = new Schema({
   ingredients: [ingredientSchema]
 }, { _id: false });
 
+const CurseSchema = new Schema({
+  name: {type: String},
+  description: {type: String},
+  type: {type: String},
+  modifiers: { type: ModifiersSchema },
+  antidote_effects: {
+    type: [String], // Array of strings for effects
+    default: [],
+  },
+  poison_effects: {
+    type: [String], // Array of strings for effects
+    default: [],
+  },
+}, { _id: false});
+
 const playerSchema = new Schema({
   _id: mongoose.Types.ObjectId,
   name: { type: String},    
@@ -241,6 +256,7 @@ const playerSchema = new Schema({
     type: Boolean,
     default: null,
   },
+  curse: CurseSchema,
   AngeloReduced: {type: Boolean},
   AngeloDelivered: {type: Boolean},
   resistance: {
