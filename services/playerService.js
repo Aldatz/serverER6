@@ -51,6 +51,7 @@ export const playersGet = async () => {
         disease: 1,
         ethaziumCursed: 1,
         email:1,
+        isbetrayer:1,
       }
     );
 
