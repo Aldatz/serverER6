@@ -106,7 +106,7 @@ export const applyCurseToPlayer = async (nick, curseName) => {
     }
 
     //apply curse
-    player.curse.push(selectedCurse);
+    player.curse = selectedCurse;
 
     await player.save();
 
