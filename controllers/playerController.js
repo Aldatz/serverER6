@@ -31,7 +31,7 @@ import { Player } from '../Schemas/PlayerSchema.js';
     try {
       const { nick } = req.params;
       const { curse } = req.body;
-      if (!email) {
+      if (!nick) {
         return res.status(400).json({ error: 'Nickname is required' });
       }
       console.log('applying curse',curse,' to player ', nick);
