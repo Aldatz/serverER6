@@ -4,7 +4,8 @@ import {
     getUserIsInsideTower,
     getUserIsInside,
     updatePlayerByEmail,
-    applyCurseToPlayer
+    applyCurseToPlayer,
+    giveAllIngredients,
   } from '../services/playerService.js';
 
 import { Player } from '../Schemas/PlayerSchema.js';
