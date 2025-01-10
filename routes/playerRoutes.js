@@ -9,7 +9,6 @@ import {
   update,
   applyCurse,
 } from '../controllers/playerController.js';
-import { giveAllIngredients } from '../services/playerService.js';
 
 const router = express.Router();
 
