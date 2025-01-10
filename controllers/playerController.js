@@ -28,7 +28,8 @@ import { Player } from '../Schemas/PlayerSchema.js';
 
   export const applyCurse = async (req, res) => {
     try {
-      const { email, curse } = req.body;
+      const { email } = req.params;
+      const { curse } = req.body;
       if (!email) {
         return res.status(400).json({ error: 'Email is required' });
       }

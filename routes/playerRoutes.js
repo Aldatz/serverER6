@@ -7,6 +7,7 @@ import {
   getMortimerPlayers,
   giveIngredients,
   update,
+  applyCurse,
 } from '../controllers/playerController.js';
 import { giveAllIngredients } from '../services/playerService.js';
 
@@ -18,6 +19,7 @@ router.post('/patchPlayer', patchPlayer);
 router.get('/mortimer', getMortimerPlayers);
 router.get('/giveIngredients/:email', giveIngredients);
 router.put('/update', update);
+router.post('/applyCurse/:email', applyCurse);
 
 
 export default router;
