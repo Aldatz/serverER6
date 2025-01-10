@@ -5,7 +5,26 @@ import {
     getUserIsInside,
     updatePlayerByEmail,
   } from '../services/playerService.js';
-  
+
+import { Player } from '../Schemas/PlayerSchema.js';
+  export const update = async (req, res) => {
+    try {
+        const { email, playerData } = req.body;
+        const updatedPlayer = await Player.findOneAndUpdate(
+            { email },
+            { playerData },
+            { new: true }
+        );
+        if (!updatedPlayer) {
+            return res.status(404).json({ success: false, message: 'Player not found' });
+        }
+        res.json({ success: true, player: updatedPlayer });
+    } catch (error) {
+        console.error('Error updating player:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  }
+
   export const isInsideTower = async (req, res) => {
     try {
       const { email } = req.body;
@@ -22,7 +41,15 @@ import {
       res.status(500).json({ error: 'Error fetching data' });
     }
   };
-  
+  export const giveIngredients = async (req, res) => {
+    try {
+      const email = req.params.email; // Extract email from the route
+      await giveAllIngredients(email);
+      res.status(200).send({ message: 'Ingredients updated successfully!' });
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  }
   export const isInside = async (req, res) => {
     try {
       const { email } = req.body;
