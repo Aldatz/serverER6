@@ -29,14 +29,14 @@ import { Player } from '../Schemas/PlayerSchema.js';
 
   export const applyCurse = async (req, res) => {
     try {
-      const { email } = req.params;
+      const { nick } = req.params;
       const { curse } = req.body;
       if (!email) {
-        return res.status(400).json({ error: 'Email is required' });
+        return res.status(400).json({ error: 'Nickname is required' });
       }
-      console.log('applying curse',email,' to player ', email);
+      console.log('applying curse',email,' to player ', nick);
 
-      const response = await applyCurseToPlayer(email,curse);
+      const response = await applyCurseToPlayer(nick,curse);
       res.json(response);
     } catch (error) {
       console.error('Error:', error);

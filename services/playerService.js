@@ -72,7 +72,7 @@ export const getUserIsInsideTower = async (email) => {
   }
 };
 
-export const applyCurseToPlayer = async (email, curseName) => {
+export const applyCurseToPlayer = async (nick, curseName) => {
   const searchCurses = async () => {
     try {
       const url = `https://kaotika-server.fly.dev/diseases`;
@@ -91,7 +91,7 @@ export const applyCurseToPlayer = async (email, curseName) => {
 
   try {
     //take player from db
-    const player = await Player.findOne({ email });
+    const player = await Player.findOne({ nick });
     if (!player) {
       throw new Error('Player not found');
     }
