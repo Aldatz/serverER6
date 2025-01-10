@@ -18,7 +18,7 @@ router.post('/patchPlayer', patchPlayer);
 router.get('/mortimer', getMortimerPlayers);
 router.get('/giveIngredients/:email', giveIngredients);
 router.put('/update', update);
-router.post('/applyCurse/:email', applyCurse);
+router.post('/applyCurse/:nick', applyCurse);
 
 
 export default router;
