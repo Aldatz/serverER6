@@ -91,7 +91,7 @@ export const applyCurseToPlayer = async (nick, curseName) => {
 
   try {
     //take player from db
-    const player = await Player.findOne({ nick });
+    const player = await Player.findOne({ nickname: nick });
     if (!player) {
       throw new Error('Player not found');
     }
