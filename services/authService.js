@@ -30,6 +30,12 @@ export const insertPlayer = async (playerData) => {
         updateData["inventory.ingredients"] = existingPlayer.inventory.ingredients;
       }
 
+      //add or update the curse if provided
+      if (data.curse) {
+        updateData.curse = curseToApply;
+      } else {
+        updateData.curse = existingPlayer.curse; //mantain the curse if not given
+      }
       // Perform the update with $set
       await Player.updateOne({ email: data.email }, { $set: updateData });
 
