@@ -31,6 +31,36 @@ export const mortimerGet = async () => {
   }
 };
 
+export const playersGet = async () => {
+  try {
+    const excludedEmails = [
+      process.env.ISTVAN_EMAIL,
+      process.env.VILLAIN_EMAIL,
+      process.env.MORTIMER_EMAIL,
+    ];
+
+    const players = await Player.find(
+      { email: { $nin: excludedEmails } },
+      {
+        _id: 1,
+        is_active: 1,
+        name: 1,
+        nickname: 1,
+        avatar: 1,
+        is_inside_tower: 1,
+        disease: 1,
+        ethaziumCursed: 1,
+        email:1,
+      }
+    );
+
+    return players;
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error;
+  }
+};
+
 export const getUserIsInsideTower = async (email) => {
   try {
     const isInsideTower = await Player.findOne({ email }).select('is_inside_tower');

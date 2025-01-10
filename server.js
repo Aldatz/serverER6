@@ -3,7 +3,7 @@ import app from './app.js';
 import { Server } from 'socket.io';
 import './config/mongooseConfig.js';
 import { setupSocket } from './services/mqttService.js';
-import { AngeloDelivered, AngeloREduced, deleteMapUser, mortimerGet, updateLocation, validateAllArtifacts } from './services/playerService.js';
+import { AngeloDelivered, AngeloREduced, deleteMapUser, mortimerGet, updateLocation, validateAllArtifacts,playersGet } from './services/playerService.js';
 import { Player } from './Schemas/PlayerSchema.js';
 import { Artefact } from './Schemas/ArtefactSchema.js';
 import { config } from 'dotenv';
@@ -167,6 +167,19 @@ io.on('connection', async (socket) => {
     if (process.env.ENABLE_MQTT === 'true') {
       console.log("cerrando puerta");
       mqttClient.publish('EIASAcolyteInside', `mesage`);
+    }
+  });
+  
+  socket.on('getPlayers', async () => {
+    try {
+      const players = await playersGet();
+
+        io.emit('Player_list', {
+          players: players,
+        });
+      
+    } catch (error) {
+      socket.emit('error', { message: 'Error al obtener la lista de jugadores.' });
     }
   });
 
@@ -424,7 +437,7 @@ socket.on('Angelo_delivered', () => {
       console.log(`Player ${player.email} now has resistance=100`);
 
       // 3) Emitir un evento de "rest_applied" si deseas notificar al cliente
-      socket.to(player.socketId).emit('rest_applied', {
+      socket.emit('rest_applied', {
         email,
         newResistance: 100,
       });
