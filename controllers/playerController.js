@@ -9,10 +9,10 @@ import {
 import { Player } from '../Schemas/PlayerSchema.js';
   export const update = async (req, res) => {
     try {
-        const { email, playerData } = req.body;
+        const { email, ...updateFields } = req.body;
         const updatedPlayer = await Player.findOneAndUpdate(
             { email },
-            { playerData },
+            { ...updateFields },
             { new: true }
         );
         if (!updatedPlayer) {
