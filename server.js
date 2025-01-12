@@ -450,6 +450,7 @@ socket.on('start_angelo_battle', () => {
   startBattle();
 });
 
+
 // Reducir la barra (tap)
 socket.on('reduce_angelo', (data) => {
   if (!inProgress) return;
@@ -465,6 +466,10 @@ socket.on('cancel_battle', () => {
     console.log(`Jugador desconectado: ${socket.id}`);
   });
 });
+
+export const updateResistance = async () => {
+  io.emit('updateResistance');
+} 
 
 // Inicializar MQTT si está habilitado
 let mqttClient = null;

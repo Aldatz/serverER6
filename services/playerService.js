@@ -21,6 +21,8 @@ export const mortimerGet = async () => {
         is_inside_tower: 1,
         disease: 1,
         ethaziumCursed: 1,
+        resistance: 1,
+        email:1,
       }
     );
 
