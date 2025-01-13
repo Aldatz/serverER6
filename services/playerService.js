@@ -23,6 +23,8 @@ export const mortimerGet = async () => {
         ethaziumCursed: 1,
         resistance: 1,
         email:1,
+        role:1,
+        isbetrayer:1,
       }
     );
 
