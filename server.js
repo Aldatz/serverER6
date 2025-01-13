@@ -468,6 +468,7 @@ socket.on('cancel_battle', () => {
 });
 
 export const updateResistance = async () => {
+  console.log('Emitiendo evento updateResistance');
   io.emit('updateResistance');
 } 
 
