@@ -21,8 +21,8 @@ export async function reduceResistance() {
       // 3) Guardar
       await p.save();
       // 4) Actualizar en cliente
-      updateResistance();
     }
+    updateResistance();
     console.log('Resistance reduced by 10% to all players (non-traitors).');
 
   } catch (err) {
