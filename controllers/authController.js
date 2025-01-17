@@ -1,5 +1,4 @@
 // controllers/authController.js
-import axios from 'axios';
 import admin from '../config/firebaseConfig.js';
 import { insertPlayer } from '../services/authService.js';
 import { Player } from '../Schemas/PlayerSchema.js';
@@ -24,8 +23,12 @@ export const verifyToken = async (req, res) => {
     console.log('Token verificado. UID del usuario:', uid);
 
     const url = `https://kaotika-server.fly.dev/players/email/${email}`;
-    const response = await axios.get(url);
-    const playerData = await insertPlayer(response.data);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    const playerData = await insertPlayer(data);
 
     const player = await Player.findOne({ email });
     if (player) {
@@ -43,9 +46,7 @@ export const verifyToken = async (req, res) => {
       playerData,
     });
   } catch (error) {
-    console.error('Error al verificar el token o al obtener datos del jugador:', error);
-    res.status(500).json({
-      error: 'Token inválido, expirado o error al obtener datos del jugador',
-    });
+    console.error('Error verifying token:', error);
+    res.status(500).json({ error: 'Error verifying token' });
   }
 };

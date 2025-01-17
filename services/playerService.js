@@ -1,7 +1,5 @@
 // services/playerService.js
 import { Player } from '../Schemas/PlayerSchema.js';
-import mongoose from '../config/mongooseConfig.js';
-import axios from 'axios';
 import '../utils/interceptor.js'
 
 export const mortimerGet = async () => {
@@ -55,8 +53,8 @@ export const playersGet = async () => {
         is_inside_tower: 1,
         disease: 1,
         ethaziumCursed: 1,
-        email:1,
-        isbetrayer:1,
+        email: 1,
+        isbetrayer: 1,
       }
     );
 
@@ -81,10 +79,16 @@ export const applyCurseToPlayer = async (nick, curseName) => {
   const searchCurses = async () => {
     try {
       const url = `https://kaotika-server.fly.dev/diseases`;
-      const response = await axios.get(url);
+      const response = await fetch(url);
 
-      if (response.data && response.data.data) {
-        return response.data.data; // Return the array of diseases
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+
+      if (data && data.data) {
+        return data.data; // Return the array of diseases
       } else {
         throw new Error('No curses found in API response');
       }
@@ -104,7 +108,7 @@ export const applyCurseToPlayer = async (nick, curseName) => {
     //fetch diseases from api
     const curses = await searchCurses();
 
-    //find teh curse
+    //find the curse
     const selectedCurse = curses.find((curse) => curse.name === curseName);
     if (!selectedCurse) {
       throw new Error(`Curse with name "${curseName}" not found`);
@@ -138,6 +142,7 @@ export const getUserIsInside = async (email) => {
     throw error;
   }
 };
+
 export const updateLocation = async (email, location) => {
     try {
       // 1. Buscar al jugador por email
@@ -238,10 +243,17 @@ export const AngeloDelivered = async () => {
   } 
 };
 
+
 export const giveAllIngredients = async (email) => {
   try {
     const url = `https://kaotika-server.fly.dev/ingredients`;
-    const response = await axios.get(url);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
 
     // 1. Buscar al jugador por email
     const player = await Player.findOne({ email });
@@ -251,7 +263,7 @@ export const giveAllIngredients = async (email) => {
     }
 
     // add qty
-    const newIngredients = response.data.data.map(ingredient => ({
+    const newIngredients = data.data.map(ingredient => ({
       ...ingredient,
       qty: 2, // Add default quantity
     }));
