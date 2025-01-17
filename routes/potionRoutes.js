@@ -1,5 +1,6 @@
+// routes/potionRoutes.js
 import express from 'express';
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -7,18 +8,12 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const url = `https://kaotika-server.fly.dev/diseases`;
-    const response = await fetch(url);
+    const response = await axios.get(url);
     
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    
-    if (data && data.data) {
+    if (response.data && response.data.data) {
       res.json({
         success: true,
-        potionsData: data.data,
+        potionsData: response.data.data,
       });
     } else {
       res.status(404).json({
