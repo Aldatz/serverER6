@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import ingredientRoutes from './routes/ingredientRoutes.js';
 import potionRoutes from './routes/potionRoutes.js';
+import {verifyToken} from './middleware/verifyToken.js';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(verifyToken);
 
 app.use('/api/players', playerRoutes);
 app.use('/api/auth', authRoutes);
