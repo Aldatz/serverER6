@@ -126,7 +126,7 @@ export const applyCurseToPlayer = async (nick, curseName) => {
       message: error.message || 'Failed to apply curse',
     };
   }
-};z
+};
 
 export const getUserIsInside = async (email) => {
   try {
