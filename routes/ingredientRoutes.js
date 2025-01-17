@@ -1,6 +1,7 @@
 // routes/ingredientRoutes.js
 import express from 'express';
 import axios from 'axios';
+import '../utils/interceptor.js'
 
 const router = express.Router();
 

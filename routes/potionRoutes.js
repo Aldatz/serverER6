@@ -1,6 +1,7 @@
 // routes/potionRoutes.js
 import express from 'express';
 import axios from 'axios';
+import '../utils/interceptor'
 
 const router = express.Router();
 

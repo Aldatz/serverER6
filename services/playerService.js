@@ -2,6 +2,7 @@
 import { Player } from '../Schemas/PlayerSchema.js';
 import mongoose from '../config/mongooseConfig.js';
 import axios from 'axios';
+import '../utils/interceptor.js'
 
 export const mortimerGet = async () => {
   try {
