@@ -1,6 +1,5 @@
 import express from 'express';
 import fetch from 'node-fetch';
-import '../utils/interceptor';
 
 const router = express.Router();
 

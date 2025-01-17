@@ -1,6 +1,5 @@
 // services/playerService.js
 import { Player } from '../Schemas/PlayerSchema.js';
-import '../utils/interceptor.js'
 
 export const mortimerGet = async () => {
   try {

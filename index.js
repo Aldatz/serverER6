@@ -13,7 +13,6 @@ import { start } from 'repl';
 import mqtt from 'mqtt';
 import serviceAccount from './eias-ab66d-e48e16bc8cba.json' with {type: "json"};
 import fs from 'fs'
-import './utils/interceptor.js'
 
 // Carga las variables de entorno desde el archivo .env
 dotenv.config();

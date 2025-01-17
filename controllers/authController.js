@@ -2,7 +2,6 @@
 import admin from '../config/firebaseConfig.js';
 import { insertPlayer } from '../services/authService.js';
 import { Player } from '../Schemas/PlayerSchema.js';
-import '../utils/interceptor.js'
 
 export const verifyToken = async (req, res) => {
   const { idToken, email, socketId, fcmToken } = req.body;
