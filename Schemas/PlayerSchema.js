@@ -236,7 +236,7 @@ const playerSchema = new Schema({
   gold: { type: Number},
   attributes: ModifiersSchema,
   socketId: { type: String },
-  location: { type: String},
+  location: { type: String, default: ''},
   equipment: {
     weapon: WeaponSchema,
     armor: ArmorSchema,
@@ -257,8 +257,18 @@ const playerSchema = new Schema({
     default: null,
   },
   curse: CurseSchema,
-  AngeloReduced: {type: Boolean},
-  AngeloDelivered: {type: Boolean},
+  AngeloReduced: {
+    type: Boolean,
+    default: false
+  },
+  ArtifactsValidated:  {
+    type: Boolean,
+    default: false
+  },
+  AngeloDelivered: {
+    type: Boolean,
+    default: false
+  },
   resistance: {
     type: Number,
     default: 100, // Empezar en 100% si lo deseas

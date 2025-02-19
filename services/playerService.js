@@ -22,9 +22,9 @@ export const mortimerGet = async () => {
         disease: 1,
         ethaziumCursed: 1,
         resistance: 1,
-        email:1,
-        role:1,
-        isbetrayer:1,
+        email: 1,
+        role: 1,
+        isbetrayer: 1,
       }
     );
 
@@ -54,8 +54,11 @@ export const playersGet = async () => {
         is_inside_tower: 1,
         disease: 1,
         ethaziumCursed: 1,
-        email:1,
-        isbetrayer:1,
+        email: 1,
+        isbetrayer: 1,
+        // AngeloDelivered: 1,
+        // ArtifactsValidated: 1,
+        // AngeloReduced: 1,
       }
     );
 
@@ -138,41 +141,41 @@ export const getUserIsInside = async (email) => {
   }
 };
 export const updateLocation = async (email, location) => {
-    try {
-      // 1. Buscar al jugador por email
-      const player = await Player.findOne({ email });
-  
-      if (!player) {
-        throw new Error('Jugador no encontrado');
-      }
-      // 2. Actualizar el campo 'location'
-      player.location = location;
-      // 3. Guardar los cambios en la base de datos
-      await player.save();
-      return;
-    } catch (error) {
-      console.error('Error al actualizar la ubicación:', error);
-      throw error;
+  try {
+    // 1. Buscar al jugador por email
+    const player = await Player.findOne({ email });
+
+    if (!player) {
+      throw new Error('Jugador no encontrado');
     }
-  };
-  export const setBetrayer = async (email, decision) => {
-    try {
-      // 1. Buscar al jugador por email
-      const player = await Player.findOne({ email });
-  
-      if (!player) {
-        throw new Error('Jugador no encontrado');
-      }
-      // 2. Actualizar el campo 'location'
-      player.isbetrayer = decision;
-      // 3. Guardar los cambios en la base de datos
-      await player.save();
-      return;
-    } catch (error) {
-      console.error('Error al actualizar isbetrayer:', error);
-      throw error;
+    // 2. Actualizar el campo 'location'
+    player.location = location;
+    // 3. Guardar los cambios en la base de datos
+    await player.save();
+    return;
+  } catch (error) {
+    console.error('Error al actualizar la ubicación:', error);
+    throw error;
+  }
+};
+export const setBetrayer = async (email, decision) => {
+  try {
+    // 1. Buscar al jugador por email
+    const player = await Player.findOne({ email });
+
+    if (!player) {
+      throw new Error('Jugador no encontrado');
     }
-  };
+    // 2. Actualizar el campo 'location'
+    player.isbetrayer = decision;
+    // 3. Guardar los cambios en la base de datos
+    await player.save();
+    return;
+  } catch (error) {
+    console.error('Error al actualizar isbetrayer:', error);
+    throw error;
+  }
+};
 
 export const updatePlayerByEmail = async (email, updateData) => {
   try {
@@ -214,7 +217,7 @@ export const validateAllArtifacts = async () => {
     console.log(`Players updated: ${result.modifiedCount}`);
   } catch (error) {
     console.error('Error al actualizar los jugadores:', error);
-  } 
+  }
 };
 
 export const AngeloREduced = async () => {
@@ -224,7 +227,7 @@ export const AngeloREduced = async () => {
     console.log(`Player updated Angelo Reduced: ${result.modifiedCount}`);
   } catch (error) {
     console.error('Error al actualizar los jugadores:', error);
-  } 
+  }
 };
 
 export const AngeloDelivered = async () => {
@@ -234,7 +237,7 @@ export const AngeloDelivered = async () => {
     console.log(`Player updated Angelo Delivered: ${result.modifiedCount}`);
   } catch (error) {
     console.error('Error al actualizar los jugadores:', error);
-  } 
+  }
 };
 
 export const giveAllIngredients = async (email) => {
