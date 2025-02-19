@@ -9,27 +9,23 @@ export const insertPlayer = async (playerData) => {
     if (existingPlayer) {
     
       const updateData = {
-        is_active: existingPlayer.is_active, // Keep the existing state
+        is_active: existingPlayer.is_active,
         is_inside_tower: existingPlayer.is_inside_tower,
         role: existingPlayer.role,
       };
-
-      // If ingredients exist in the incoming data, merge them
-      if (data.inventory && data.inventory.ingredients) {
-        updateData["inventory.ingredients"] = [
-          ...existingPlayer.inventory.ingredients,
-          ...data.inventory.ingredients.filter(
-            (newIngredient) =>
-              !existingPlayer.inventory.ingredients.some(
-                (existingIngredient) =>
-                  existingIngredient.id === newIngredient.id
-              )
-          ),
-        ];
+      
+      if (data.inventory?.ingredients) {
+        updateData["inventory.ingredients"] = Object.values(
+          [...existingPlayer.inventory.ingredients, ...data.inventory.ingredients].reduce((acc, ingredient) => {
+            acc[ingredient._id] = acc[ingredient._id] || { ...ingredient, qty: 0 };
+            acc[ingredient._id].qty += ingredient.qty;
+            return acc;
+          }, {})
+        );
       } else {
-        updateData["inventory.ingredients"] = existingPlayer.inventory.ingredients;
+        updateData["inventory.ingredients"] = [...existingPlayer.inventory.ingredients];
       }
-
+      
       //add or update the curse if provided
       if (data.curse) {
         updateData.curse = curseToApply;
